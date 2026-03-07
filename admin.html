@@ -2,79 +2,81 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Monitoring Guru - SDN 62 TAJONG</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <title>MASTER CONTROL - SDN 62 TAJONG</title>
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #0f172a; color: white; display: flex; height: 100vh; margin: 0; }
-        .sidebar { width: 250px; background: #1e293b; padding: 20px; border-right: 1px solid #334155; }
-        .main { flex: 1; display: flex; flex-direction: column; padding: 20px; }
-        .log-box { flex: 1; background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px; overflow-y: auto; border: 1px solid #334155; }
-        .input-bar { background: #1e293b; padding: 20px; display: flex; gap: 10px; border-top: 2px solid #6366f1; }
-        input, select { padding: 12px; border-radius: 8px; border: none; background: #0f172a; color: white; }
-        .item { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #6366f1; }
-        .item.alert { border-left-color: #f59e0b; background: rgba(245,158,11,0.1); }
-        .footer { font-size: 10px; color: #64748b; margin-top: auto; padding-top: 20px; }
+        body { font-family: sans-serif; background: #0f172a; color: white; margin: 0; display: flex; height: 100vh; }
+        .side { width: 250px; background: #1e293b; padding: 20px; display: flex; flex-direction: column; }
+        .main { flex: 1; padding: 20px; overflow-y: auto; }
+        .card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #6366f1; }
+        .btn { padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        input, select { padding: 10px; border-radius: 8px; border: none; background: #0f172a; color: white; width: 100%; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
+    <div class="side">
         <h3>SDN 62 TAJONG</h3>
-        <p style="font-size: 11px;">MONITORING PANEL</p>
-        <div class="footer">
-            Portal Sekolah Digital © 2026<br>
-            Developed by Riski OPS 62 Tajong
+        <p style="font-size:12px;">Monitoring Guru</p>
+        <hr style="width:100%; opacity:0.1;">
+        
+        <button class="btn" style="background:#f59e0b; color:black;" onclick="soalAcak()">🎲 SOAL ACAK OTOMATIS</button>
+        
+        <div style="margin-top:20px;">
+            <label style="font-size:10px;">BALAS KE SISWA:</label>
+            <select id="pilih-siswa"><option value="SEMUA">SEMUA SISWA</option></select>
+            <input id="input-balas" placeholder="Ketik balasan...">
+            <button class="btn" style="background:#6366f1; color:white; width:100%;" onclick="balasSiswa()">KIRIM BALASAN</button>
         </div>
     </div>
 
     <div class="main">
-        <div class="log-box" id="log-aktivitas">
-            <div style="color:#6366f1">Menunggu aktivitas siswa...</div>
-        </div>
-
-        <div class="input-bar">
-            <select id="target-siswa">
-                <option value="">SEMUA SISWA</option>
-            </select>
-            <input id="isi-soal" style="flex:1" placeholder="Ketik soal atau balasan pesan...">
-            <button onclick="kirimPesan()" style="background:#6366f1; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">KIRIM</button>
-        </div>
+        <h3>AKTIVITAS SISWA</h3>
+        <div id="log-monitor"></div>
     </div>
 
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <script>
         const ably = new Ably.Realtime('Lqd-SA.02uOJw:5Q9fS13uwWhBLZJsqF9XA4gjNMzowZHCq2jJ9kxDdx8');
         const channel = ably.channels.get('kelas-sdn62');
+        const daftarSoal = ["Sebutkan sila ke-3 Pancasila!", "Berapakah hasil dari 12 x 5?", "Apa ibu kota provinsi Bengkulu?", "Sebutkan contoh hewan mamalia!", "Siapa penemu lampu pijar?"];
 
-        function kirimPesan() {
-            const teks = document.getElementById('isi-soal').value;
-            const untuk = document.getElementById('target-siswa').value;
+        function soalAcak() {
+            const soal = daftarSoal[Math.floor(Math.random() * daftarSoal.length)];
+            channel.publish('soal_broadcast', { teks: soal });
+            addLog("📢 Mengirim Soal Acak: " + soal);
+        }
+
+        function balasSiswa() {
+            const teks = document.getElementById('input-balas').value;
+            const untuk = document.getElementById('pilih-siswa').value;
             if(!teks) return;
-            
-            channel.publish('pesan_dari_guru', { teks, untuk });
-            addLog(`✅ Terkirim ke ${untuk || 'Semua'}: ${teks}`);
-            document.getElementById('isi-soal').value = "";
+            channel.publish('balasan_guru', { teks, untuk });
+            addLog(`✅ Membalas (${untuk}): ${teks}`);
+            document.getElementById('input-balas').value = "";
         }
 
         channel.subscribe('siswa_join', (msg) => {
-            addLog(`👤 <b>${msg.data.nama}</b> masuk di Meja ${msg.data.meja}`);
-            // Tambah ke daftar pilihan balasan
+            addLog(`👤 <b>${msg.data.nama}</b> (Meja ${msg.data.meja}) Masuk.`);
+            const sel = document.getElementById('pilih-siswa');
             const opt = document.createElement('option');
-            opt.value = msg.data.nama;
-            opt.text = msg.data.nama;
-            document.getElementById('target-siswa').appendChild(opt);
+            opt.value = msg.data.nama; opt.text = msg.data.nama;
+            sel.appendChild(opt);
         });
 
-        channel.subscribe('siswa_menjawab', (msg) => {
-            addLog(`💬 <b>${msg.data.nama}</b>: ${msg.data.teks}`, true);
+        channel.subscribe('siswa_aksi', (msg) => {
+            let warna = "#6366f1";
+            if(msg.data.aksi === 'BUTUH BANTUAN') warna = "#ef4444";
+            if(msg.data.aksi === 'MENJAWAB') warna = "#10b981";
+            
+            addLog(`<span style="color:${warna}"><b>${msg.data.nama}</b>: ${msg.data.aksi} ${msg.data.teks || ''}</span>`);
             new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
         });
 
-        function addLog(html, isAlert) {
+        function addLog(html) {
             const div = document.createElement('div');
-            div.className = 'item' + (isAlert ? ' alert' : '');
+            div.className = 'card';
             div.innerHTML = html;
-            const log = document.getElementById('log-aktivitas');
+            const log = document.getElementById('log-monitor');
             log.prepend(div);
         }
     </script>
