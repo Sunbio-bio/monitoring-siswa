@@ -8,7 +8,6 @@
     <style>
         :root { --primary: #6366f1; --secondary: #a855f7; --bg-dark: #0f172a; --glass: rgba(255, 255, 255, 0.1); --border: rgba(255, 255, 255, 0.2); --accent: #f59e0b; }
         
-        /* Perbaikan Body agar konten tidak terpotong di HP */
         body { 
             margin: 0; 
             min-height: 100vh; 
@@ -21,11 +20,10 @@
             background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.9)), url('sekolah.jpg'); 
             background-size: cover; 
             background-position: center; 
-            padding: 15px; /* Padding lebih kecil untuk HP */
+            padding: 15px;
             box-sizing: border-box;
         }
 
-        /* Box dibuat lebih fleksibel lebarnya */
         .box { 
             width: 100%; 
             max-width: 380px; 
@@ -40,7 +38,6 @@
             box-sizing: border-box;
         }
 
-        /* Tombol dibuat lebih pas untuk jempol di HP */
         .btn { 
             width: 100%; 
             padding: 16px; 
@@ -51,13 +48,29 @@
             text-transform: uppercase; 
             margin-bottom: 12px; 
             transition: 0.3s; 
-            font-size: 14px; /* Ukuran font standar HP */
+            font-size: 14px;
         }
         
         .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
         .btn-jawab { background: #10b981; color: white; font-size: 16px; }
         
-        .btn-logout { position: absolute; top: 15px; right: 15px; background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 5px 12px; border-radius: 10px; font-size: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .btn-logout { 
+            position: absolute; 
+            top: 15px; 
+            right: 15px; 
+            background: rgba(239, 68, 68, 0.2); 
+            color: #ef4444; 
+            border: 1px solid rgba(239, 68, 68, 0.3); 
+            padding: 5px 12px; 
+            border-radius: 10px; 
+            font-size: 10px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 5px; 
+            z-index: 10;
+        }
         .btn-logout:hover { background: #ef4444; color: white; }
 
         input { 
@@ -70,15 +83,14 @@
             outline: none; 
             margin-bottom: 12px; 
             box-sizing: border-box; 
-            font-size: 16px; /* Mencegah auto-zoom di iPhone saat ketik */
+            font-size: 16px;
         }
 
         #timer { font-size: 28px; font-weight: 800; color: #ef4444; margin: 10px 0; display: none; }
         #input-jawaban-container { display: none; margin-top: 15px; }
         .status-lock { font-size: 12px; color: #ef4444; font-weight: bold; margin-bottom: 10px; display: none; }
-        .footer-login { margin-top: 20px; font-size: 10px; color: #94a3b8; text-align: center; }
+        .footer-login { margin-top: 20px; font-size: 10px; color: #94a3b8; text-align: center; width: 100%; }
 
-        /* Media Query khusus HP kecil agar tidak terlalu sesak */
         @media (max-width: 360px) {
             .box { padding: 20px; }
             h2 { font-size: 18px; }
@@ -87,7 +99,7 @@
 </head>
 <body>
 
-    <div id="login-section" style="width: 100%; display: flex; justify-content: center;">
+    <div id="login-section" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
         <div class="box">
             <h2 style="color:var(--primary); margin:0;">SDN 62 TAJONG</h2>
             <p style="font-size:10px; margin-bottom:20px;">PORTAL DIGITAL CLASSROOM</p>
@@ -95,13 +107,13 @@
             <input id="meja" type="text" placeholder="Nomor Meja">
             <button class="btn btn-primary" onclick="gabung()">MASUK KELAS</button>
         </div>
+        <div class="footer-login" id="footer-login-text">Portal Sekolah Digital © 2026<br>Developed by Riski OPS 62 Tajong</div>
     </div>
-    <div class="footer-login" id="footer-login-text">Portal Sekolah Digital © 2026<br>Developed by Riski OPS 62 Tajong</div>
 
     <div id="game-ui" class="box" style="display:none;">
-        <button class="btn-logout" onclick="keluar()">🚪 LOGOUT</button>
+        <button class="btn-logout" onclick="keluar()">Log Out 🚪</button>
         
-        <div id="user-display" style="font-size: 12px; margin-bottom: 15px; opacity: 0.8; text-align: left;"></div>
+        <div id="user-display" style="font-size: 12px; margin-bottom: 15px; opacity: 0.8; text-align: left; padding-top: 10px;"></div>
         
         <div style="background:rgba(0,0,0,0.4); padding:15px; border-radius:15px; margin-bottom:15px; border-left:4px solid var(--accent); text-align: left;">
             <b style="color:var(--accent)">SOAL GURU:</b><br><span id="teks-soal">Menunggu instruksi...</span>
@@ -115,7 +127,7 @@
         <div id="input-jawaban-container">
             <input id="isi-jawaban" placeholder="Ketik jawaban kamu...">
             <button class="btn btn-primary" style="padding: 12px;" onclick="kirimJawaban()">KIRIM JAWABAN</button>
-            <button class="btn" style="background:#f59e0b; color:black; font-size:14px;" onclick="alihkanJawaban()">❌ ALIKHAN</button>
+            <button class="btn" style="background:#f59e0b; color:black; font-size:14px;" onclick="alihkanJawaban()">❌ ALIHKAN</button>
         </div>
         
         <button class="btn" style="background:#ef4444; color:white; font-size:12px;" onclick="aksiSiswa('BUTUH BANTUAN')">🚨 BANTUAN GURU</button>
@@ -141,17 +153,19 @@
 
         function bukaMenuSiswa(n, m) {
             document.getElementById('login-section').style.display = 'none';
-            document.getElementById('footer-login-text').style.display = 'none';
             document.getElementById('game-ui').style.display = 'block';
             document.getElementById('user-display').innerText = `👤 ${n} | Meja ${m}`;
         }
 
+        // FUNGSI LOGOUT YANG SUDAH DIPERBAIKI
         function keluar() {
             if(confirm("Apakah Anda yakin ingin keluar?")) {
                 const n = sessionStorage.getItem('nama');
-                channel.publish('siswa_aksi', { nama: n, aksi: 'KELUAR KELAS' });
+                if(n) {
+                    channel.publish('siswa_aksi', { nama: n, aksi: 'KELUAR KELAS' });
+                }
                 sessionStorage.clear();
-                location.reload();
+                window.location.reload();
             }
         }
 
