@@ -3,38 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SDN 62 TAJONG - Digital Classroom</title>
+    <title>SISWA - SDN 62 TAJONG</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6366f1; --secondary: #a855f7; --bg-dark: #0f172a; --glass: rgba(255, 255, 255, 0.1); --border: rgba(255, 255, 255, 0.2); --accent: #f59e0b; }
-        body { margin: 0; min-height: 100vh; font-family: 'Poppins', sans-serif; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.9)), url('sekolah.jpg'); background-size: cover; background-position: center; padding: 15px; }
-        .container { width: 100%; max-width: 400px; background: var(--glass); backdrop-filter: blur(20px); border-radius: 30px; padding: 30px; border: 1px solid var(--border); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        :root { --primary: #6366f1; --bg-dark: #0f172a; --glass: rgba(255, 255, 255, 0.1); --border: rgba(255, 255, 255, 0.2); --accent: #f59e0b; }
+        body { margin: 0; min-height: 100vh; font-family: 'Poppins', sans-serif; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.9)), url('sekolah.jpg'); background-size: cover; background-position: center; padding: 20px; }
+        .box { width: 100%; max-width: 400px; background: var(--glass); backdrop-filter: blur(20px); border-radius: 30px; padding: 30px; border: 1px solid var(--border); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: white; outline: none; }
-        .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 5px; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
-        .btn-help { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; font-size: 12px; margin-top: 15px; }
-        #game-ui { display: none; width: 100%; max-width: 400px; }
-        .chat-box { background: rgba(0,0,0,0.4); border-radius: 15px; padding: 15px; margin: 15px 0; min-height: 80px; font-size: 14px; border-left: 4px solid var(--accent); text-align: left; }
-        .footer { margin-top: 30px; font-size: 10px; color: #94a3b8; line-height: 1.6; }
+        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-jawab { background: #10b981; color: white; font-size: 18px; display: none; }
+        .btn-bantuan { background: #ef4444; color: white; font-size: 12px; }
+        #chat-area { background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px; margin-top: 15px; text-align: left; font-size: 13px; border-left: 4px solid var(--primary); display: none; }
+        .footer { margin-top: 20px; font-size: 10px; color: #94a3b8; text-align: center; line-height: 1.5; }
     </style>
 </head>
 <body>
 
-    <div id="login-section" class="container">
-        <h2>SDN 62 TAJONG</h2>
+    <div id="login-section" class="box">
+        <h2 style="color:var(--primary); margin-bottom:0;">SDN 62 TAJONG</h2>
+        <p style="font-size:10px; margin-bottom:20px; color:#94a3b8;">Portal Digital Classroom</p>
         <input id="nama" type="text" placeholder="Nama Lengkap">
-        <input id="meja" type="text" placeholder="Nomor Meja/Panggilan">
-        <button class="btn btn-primary" onclick="gabung()">MASUK KELAS</button>
+        <input id="meja" type="text" placeholder="Nomor Meja">
+        <button class="btn" style="background:var(--primary); color:white;" onclick="gabung()">MASUK KELAS</button>
     </div>
 
-    <div id="game-ui" class="container">
-        <div id="user-tag" style="font-size: 12px; margin-bottom: 10px; color: #cbd5e1;"></div>
-        <div class="chat-box" id="pesan-guru">MENUNGGU SOAL/PESAN GURU...</div>
+    <div id="game-ui" class="box" style="display:none;">
+        <div id="user-info" style="font-size:12px; margin-bottom:15px; color:#cbd5e1;"></div>
         
-        <input id="balasan-siswa" type="text" placeholder="Ketik jawaban/balasan ke guru...">
-        <button class="btn btn-primary" onclick="kirimBalasan()">KIRIM KE GURU</button>
+        <div id="display-soal" style="background:rgba(0,0,0,0.4); padding:20px; border-radius:15px; border:1px dashed var(--border);">
+            MENUNGGU SOAL GURU...
+        </div>
+
+        <button id="btn-jawab" class="btn btn-jawab" onclick="jawab()">🖐️ SAYA MAU JAWAB!</button>
         
-        <button class="btn btn-help" onclick="panggilGuru()">🚨 BUTUH BANTUAN GURU</button>
+        <div id="chat-area"></div>
+        
+        <div style="margin-top:20px; display:flex; gap:5px;">
+            <input id="pesan-ke-guru" placeholder="Balas guru..." style="margin-bottom:0;">
+            <button onclick="kirimPesan()" style="background:var(--primary); border:none; border-radius:10px; padding:0 15px; color:white;">Kirim</button>
+        </div>
+        
+        <button class="btn btn-bantuan" onclick="mintaBantuan()">🚨 BANTUAN GURU</button>
     </div>
 
     <div class="footer">
@@ -50,36 +59,45 @@
         function gabung() {
             const nama = document.getElementById('nama').value;
             const meja = document.getElementById('meja').value;
-            if(!nama) return alert("Isi nama!");
+            if(!nama) return alert("Nama wajib diisi!");
             sessionStorage.setItem('nama', nama);
-            sessionStorage.setItem('meja', meja);
             channel.publish('siswa_join', { nama, meja });
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('game-ui').style.display = 'block';
-            document.getElementById('user-tag').innerHTML = `👤 ${nama} | Meja ${meja}`;
+            document.getElementById('user-info').innerText = `👤 ${nama} | Meja ${meja}`;
         }
 
-        channel.subscribe('pesan_dari_guru', (msg) => {
-            // Cek apakah pesan untuk semua atau hanya untuk siswa ini
-            if (!msg.data.untuk || msg.data.untuk === sessionStorage.getItem('nama')) {
-                document.getElementById('pesan-guru').innerHTML = `<b>GURU:</b><br>${msg.data.teks}`;
-                new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
+        channel.subscribe('soal_broadcast', (msg) => {
+            document.getElementById('display-soal').innerHTML = `<b>SOAL:</b><br>${msg.data.teks}`;
+            document.getElementById('btn-jawab').style.display = 'block';
+        });
+
+        channel.subscribe('balasan_guru', (msg) => {
+            if(msg.data.untuk === sessionStorage.getItem('nama') || msg.data.untuk === "SEMUA") {
+                const area = document.getElementById('chat-area');
+                area.style.display = 'block';
+                area.innerHTML = `<b>GURU:</b> ${msg.data.teks}`;
             }
         });
 
-        function kirimBalasan() {
-            const teks = document.getElementById('balasan-siswa').value;
+        function jawab() {
             const nama = sessionStorage.getItem('nama');
-            if(!teks) return;
-            channel.publish('siswa_menjawab', { nama, teks });
-            document.getElementById('balasan-siswa').value = "";
-            alert("Terkirim ke guru!");
+            channel.publish('siswa_aksi', { nama, aksi: 'MENJAWAB' });
+            alert("Berhasil lapor ke guru!");
         }
 
-        function panggilGuru() {
+        function mintaBantuan() {
             const nama = sessionStorage.getItem('nama');
-            channel.publish('siswa_menjawab', { nama: "🚨 " + nama, teks: "MEMBUTUHKAN BANTUAN!" });
-            alert("Guru telah dipanggil!");
+            channel.publish('siswa_aksi', { nama, aksi: 'BUTUH BANTUAN' });
+            alert("Guru sudah dipanggil!");
+        }
+
+        function kirimPesan() {
+            const teks = document.getElementById('pesan-ke-guru').value;
+            const nama = sessionStorage.getItem('nama');
+            if(!teks) return;
+            channel.publish('siswa_aksi', { nama, aksi: 'PESAN', teks });
+            document.getElementById('pesan-ke-guru').value = "";
         }
     </script>
 </body>
