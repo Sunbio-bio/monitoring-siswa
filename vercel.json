@@ -1,18 +1,16 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
-    }
+    { "src": "server.js", "use": "@vercel/node" },
+    { "src": "*.html", "use": "@vercel/static" }
   ],
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/(?!admin.html|index.html|.*\\.jpg|.*\\.png).*",
       "destination": "server.js"
     }
   ]
