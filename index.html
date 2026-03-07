@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SDN 62 TAJONG - Digital Classroom</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --bg-dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.1);
+            --border: rgba(255, 255, 255, 0.2);
+            --accent: #f59e0b;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; touch-action: manipulation; }
+        
+        body {
+            margin: 0; 
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            color: #fff; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            /* --- PENGATURAN FOTO LATAR BELAKANG --- */
+            /* Ganti 'sekolah.jpg' dengan nama file foto Bapak (misal: bg.png atau foto.jpg) */
+            background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.85)), 
+                        url('sekolah.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: var(--bg-dark); /* Warna cadangan jika foto gagal loading */
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        /* --- LOGIN BOX (Kaca Mewah) --- */
+        .login-container {
+            width: 100%; 
+            max-width: 380px; 
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px; 
+            padding: 40px 25px; 
+            text-align: center; 
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: fadeIn 0.8s ease;
+        }
+
+        h2 { font-weight: 800; letter-spacing: 1px; margin-bottom: 5px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+
+        input {
+            width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px; background: rgba(0, 0, 0, 0.3); color: #fff;
+            outline: none; margin-bottom: 12px; font-size: 16px; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); }
+
+        .btn-login {
+            width: 100%; padding: 15px; border: none; border-radius: 15px;
+            background: linear-gradient(135deg, #6366f1, #a855f7); color: white;
+            font-weight: 700; cursor: pointer; text-transform: uppercase;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        /* --- GAME UI --- */
+        #game-ui { display: none; width: 100%; max-width: 500px; animation: fadeIn 0.5s ease; }
+        
+        .meja-area {
+            width: 240px; height: 240px; background: rgba(255,255,255,0.05);
+            border-radius: 50%; margin: 30px auto; position: relative;
+            border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center;
+        }
+
+        .meja-tengah { 
+            width: 85%; background: rgba(15, 23, 42, 0.9); padding: 20px; border-radius: 25px; 
+            border: 1px solid var(--border); text-align: center; min-height: 120px; z-index: 2;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .kursi {
+            position: absolute; width: 45px; height: 45px; background: #1e293b; 
+            border-radius: 50%; display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; border: 1px solid var(--border); font-size: 8px; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .menjawab { border: 3px solid var(--accent); box-shadow: 0 0 20px var(--accent); background: #451a03; animation: bounce 1s infinite; }
+
+        .bubble-guru {
+            background: var(--accent); color: #000; padding: 12px; border-radius: 15px;
+            font-size: 12px; font-weight: 800; border: 2px solid white; margin-bottom: 10px;
+            animation: popIn 0.4s both;
+        }
+
+        .mini-input-group {
+            display: flex; gap: 8px; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 12px; border: 1px solid var(--border);
+        }
+        .mini-input {
+            flex: 1; background: transparent; border: none; color: white; font-size: 12px; outline: none;
+        }
+        .btn-mini-kirim {
+            background: var(--primary); border: none; color: white; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold;
+        }
+
+        .btn-panggil {
+            background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444;
+            padding: 10px 20px; border-radius: 12px; font-size: 11px; font-weight: 600; cursor: pointer; margin-top: 20px;
+        }
+
+        @keyframes popIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+    </style>
+</head>
+<body>
+
+    <div id="login-section" class="login-container">
+        <h2 style="color:var(--primary)">SD NEGERI 62 TAJONG</h2>
+        <div style="font-size: 11px; margin-bottom: 25px; color: #cbd5e1; font-weight: 300; letter-spacing: 2px;">CLASSROOM Powered By Riski</div>
+        <input id="nama" type="text" placeholder="Nama Lengkap" autocomplete="off">
+        <input id="kode" type="text" placeholder="Nama Panggilan" autocomplete="off">
+        <button class="btn-login" onclick="gabung()">MASUK KELAS</button>
+    </div>
+
+    <div id="game-ui">
+        <div id="status-info" style="text-align:center; font-size:11px; color:#94a3b8; margin-bottom:10px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 10px;"></div>
+        
+        <div class="meja-area" id="meja">
+            <div class="meja-tengah">
+                <div id="soal-display" style="font-size:12px; font-weight:600; line-height: 1.5;">MENUNGGU INSTRUKSI GURU...</div>
+                <div id="balasan-guru-area"></div>
+            </div>
+        </div>
+
+        <div style="text-align: center; padding: 0 10px;">
+            <button id="btn-jawab-main" style="background:#10b981; width:100%; max-width:350px; padding: 18px; border-radius: 20px; border:none; color:white; font-weight:800; font-size:16px; box-shadow: 0 10px 25px rgba(16,185,129,0.4);" onclick="jawab()">🖐️ SAYA MAU JAWAB!</button>
+            
+            <div id="input-jawaban-area" style="display:none; margin-top: 20px;">
+                <input id="isi-jawaban" placeholder="Ketik jawabanmu di sini..." style="border: 2px solid var(--primary);">
+                <button style="background:var(--primary); width:100%; padding:15px; border:none; border-radius:15px; color:white; font-weight:bold; font-size:14px;" onclick="kirimJawaban()">KIRIM JAWABAN</button>
+            </div>
+
+            <br>
+            <button class="btn-panggil" onclick="panggilGuru()">🔔 BANTUAN GURU</button>
+            <p onclick="logout()" style="margin-top:25px; font-size:10px; color:#64748b; cursor:pointer; text-decoration: underline;">Keluar / Ganti Akun</p>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        function gabung() {
+            const nama = document.getElementById('nama').value;
+            const kode = document.getElementById('kode').value;
+            if(!nama || !kode) return alert("Lengkapi data login!");
+            sessionStorage.setItem('nama', nama);
+            sessionStorage.setItem('kode', kode);
+            socket.emit('join_room', { nama, roomCode: kode });
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('game-ui').style.display = 'block';
+            document.getElementById('status-info').innerHTML = `<b>${nama}</b> | Meja <b>${kode}</b>`;
+        }
+
+        socket.on('notif_dari_guru', (data) => {
+            const area = document.getElementById('balasan-guru-area');
+            area.innerHTML = `
+                <div class="bubble-guru">💬 GURU: ${data.pesan}</div>
+                <div class="mini-input-group">
+                    <input id="balas-chat-siswa" class="mini-input" placeholder="Tulis balasan...">
+                    <button class="btn-mini-kirim" onclick="balasPesanGuru()">KIRIM</button>
+                </div>
+            `;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.speak(new SpeechSynthesisUtterance("Ada pesan dari guru"));
+            }
+        });
+
+        function balasPesanGuru() {
+            const teks = document.getElementById('balas-chat-siswa').value;
+            if(!teks) return;
+            socket.emit('kirim_jawaban_ke_guru', {
+                nama: sessionStorage.getItem('nama'),
+                roomCode: sessionStorage.getItem('kode'),
+                teks: "(CHAT) " + teks
+            });
+            document.getElementById('balasan-guru-area').innerHTML = "<div style='font-size:11px; color:#10b981; margin-top:10px; font-weight:bold;'>Terkirim! ✓</div>";
+            setTimeout(() => { document.getElementById('balasan-guru-area').innerHTML = ""; }, 3000);
+        }
+
+        socket.on('terima_soal_online', (data) => {
+            document.getElementById('soal-display').innerHTML = `
+                <div style="color:var(--secondary); font-size:10px; font-weight:800; text-transform:uppercase; margin-bottom:5px;">Soal Baru:</div>
+                <div style="font-size:14px; font-weight:600;">${data.pertanyaan}</div>
+            `;
+            const btn = document.getElementById('btn-jawab-main');
+            btn.style.display = 'inline-block'; btn.disabled = false; btn.innerText = "🖐️ SAYA MAU JAWAB!"; btn.style.opacity = "1";
+            document.getElementById('input-jawaban-area').style.display = 'none';
+        });
+
+        function jawab() { socket.emit('siswa_menjawab', { roomCode: sessionStorage.getItem('kode') }); }
+
+        socket.on('meja_terkunci', (data) => {
+            const btn = document.getElementById('btn-jawab-main');
+            if (socket.id === data.idPemenang) {
+                btn.style.display = 'none';
+                document.getElementById('input-jawaban-area').style.display = 'block';
+                document.getElementById('isi-jawaban').focus();
+            } else {
+                btn.disabled = true; btn.innerText = `🔒 DIKUNCI: ${data.pemenang}`; btn.style.opacity = "0.5";
+            }
+        });
+
+        socket.on('meja_terbuka', () => {
+            const btn = document.getElementById('btn-jawab-main');
+            btn.disabled = false; btn.style.display = 'inline-block'; btn.innerText = "🖐️ SAYA MAU JAWAB!"; btn.style.opacity = "1";
+            document.getElementById('input-jawaban-area').style.display = 'none';
+        });
+
+        function kirimJawaban() {
+            const teks = document.getElementById('isi-jawaban').value;
+            if(!teks) return alert("Jawaban kosong!");
+            socket.emit('kirim_jawaban_ke_guru', {
+                nama: sessionStorage.getItem('nama'), roomCode: sessionStorage.getItem('kode'), teks: teks
+            });
+            document.getElementById('isi-jawaban').value = "";
+            document.getElementById('input-jawaban-area').style.display = 'none';
+            document.getElementById('btn-jawab-main').style.display = 'inline-block';
+            document.getElementById('btn-jawab-main').innerText = "JAWABAN TERKIRIM!";
+            document.getElementById('btn-jawab-main').disabled = true;
+        }
+
+        socket.on('update_meja', (daftarSiswa) => {
+            const meja = document.getElementById('meja');
+            meja.querySelectorAll('.kursi').forEach(k => k.remove());
+            daftarSiswa.forEach((siswa, index) => {
+                const total = daftarSiswa.length;
+                const sud = (index / total) * 2 * Math.PI;
+                const radius = 95; 
+                const x = Math.round(radius * Math.cos(sud));
+                const y = Math.round(radius * Math.sin(sud));
+                const div = document.createElement('div');
+                div.className = 'kursi' + (siswa.isAnswering ? ' menjawab' : '');
+                div.style.left = `calc(50% + ${x}px - 22px)`; div.style.top = `calc(50% + ${y}px - 22px)`;
+                div.innerHTML = `<span style="font-size:14px;">👤</span><div style="font-size:7px; font-weight:bold; white-space:nowrap;">${siswa.nama.split(' ')[0]}</div>`;
+                meja.appendChild(div);
+            });
+        });
+
+        function panggilGuru() {
+            socket.emit('panggil_guru', { nama: sessionStorage.getItem('nama'), roomCode: sessionStorage.getItem('kode') });
+            alert("Memanggil guru...");
+        }
+
+        window.onload = () => {
+            const n = sessionStorage.getItem('nama'), k = sessionStorage.getItem('kode');
+            if(n && k) { document.getElementById('nama').value = n; document.getElementById('kode').value = k; gabung(); }
+        };
+
+        function logout() { sessionStorage.clear(); location.reload(); }
+    </script>
+</body>
+</html>
