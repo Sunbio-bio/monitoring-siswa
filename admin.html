@@ -3,30 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADMIN - SDN 62 TAJONG</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Master Control - SDN 62 TAJONG</title>
     <style>
-        body { margin: 0; background: #0f172a; color: white; font-family: 'Poppins', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { color: #6366f1; text-align: center; }
-        input { width: 100%; padding: 15px; border-radius: 12px; border: none; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 15px; border-radius: 12px; border: none; background: #6366f1; color: white; font-weight: 800; cursor: pointer; }
-        .log-container { margin-top: 20px; width: 100%; max-width: 500px; }
-        .log-item { background: rgba(255,255,255,0.05); margin-bottom: 10px; padding: 15px; border-radius: 15px; border-left: 5px solid #6366f1; animation: fadeIn 0.5s ease; }
-        .alert-item { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* CSS ASLI BAPAK */
+        :root { --primary: #6366f1; --bg-dark: #0f172a; --glass: rgba(255, 255, 255, 0.07); --glass-border: rgba(255, 255, 255, 0.15); --success: #10b981; --danger: #ef4444; }
+        body { font-family: sans-serif; margin: 0; background: var(--bg-dark); color: #fff; display: flex; height: 100vh; }
+        aside { width: 200px; background: rgba(15, 23, 42, 0.98); border-right: 1px solid var(--glass-border); padding: 15px; }
+        main { flex: 1; padding: 20px; display: flex; flex-direction: column; }
+        .log-section { width: 350px; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 15px; margin-left: 20px; border: 1px solid var(--glass-border); overflow-y: auto; }
+        .bottom-bar { position: fixed; bottom: 0; left: 200px; right: 0; background: #1e293b; padding: 15px; display: flex; gap: 10px; border-top: 2px solid var(--primary); }
+        input { flex: 1; padding: 10px; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; }
+        .item-log { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--primary); font-size: 13px; }
+        .btn { padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; color: white; background: var(--primary); }
     </style>
 </head>
 <body>
 
-    <h2>MONITORING GURU</h2>
-    <div class="card">
-        <input id="input-soal" type="text" placeholder="Masukkan pertanyaan untuk siswa...">
-        <button onclick="kirimSoal()">🚀 SEBARKAN SOAL SEKARANG</button>
-    </div>
+    <aside>
+        <h3>SDN 62 TAJONG</h3>
+        <p style="font-size: 10px; color: #94a3b8;">MONITORING GURU</p>
+    </aside>
 
-    <div class="log-container" id="log-list">
+    <main>
+        <div style="display:flex; flex:1;">
+            <div style="flex:1;">
+                <h2>MEJA AKTIF</h2>
+                <div id="container-meja">Siswa yang login akan muncul di log samping.</div>
+            </div>
+            
+            <div class="log-section">
+                <h4>LOG AKTIVITAS</h4>
+                <div id="log-jawaban"></div>
+            </div>
         </div>
+
+        <div class="bottom-bar">
+            <input id="soalManual" placeholder="Ketik soal atau pesan ke semua siswa...">
+            <button class="btn" onclick="kirimSoal()">KIRIM SOAL</button>
+        </div>
+    </main>
 
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <script>
@@ -35,28 +50,28 @@
         const channel = ably.channels.get('kelas-sdn62');
 
         function kirimSoal() {
-            const teks = document.getElementById('input-soal').value;
-            if(!teks) return alert("Isi soal dulu Pak!");
-            channel.publish('soal_baru', { teks });
-            addLog(`✅ Soal dikirim: "${teks}"`, false);
-            document.getElementById('input-soal').value = "";
+            const val = document.getElementById('soalManual').value;
+            if(!val) return;
+            channel.publish('soal_baru', { teks: val });
+            document.getElementById('soalManual').value = "";
+            addLog("✅ Soal Terkirim: " + val);
         }
 
         channel.subscribe('siswa_join', (msg) => {
-            addLog(`👤 <b>${msg.data.nama}</b> masuk dari Meja ${msg.data.meja}`, false);
+            addLog(`👤 <b>${msg.data.nama}</b> (Meja ${msg.data.meja}) bergabung.`);
         });
 
         channel.subscribe('siswa_menjawab', (msg) => {
-            addLog(`🖐️ <b>${msg.data.nama}</b> Menekan Tombol Jawab!`, true);
+            addLog(`🖐️ <b>${msg.data.nama}</b> Ingin Menjawab!`);
             new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
         });
 
-        function addLog(html, isAlert) {
+        function addLog(teks) {
             const div = document.createElement('div');
-            div.className = 'log-item' + (isAlert ? ' alert-item' : '');
-            div.innerHTML = html;
-            const list = document.getElementById('log-list');
-            list.prepend(div);
+            div.className = 'item-log';
+            div.innerHTML = teks;
+            const log = document.getElementById('log-jawaban');
+            log.prepend(div);
         }
     </script>
 </body>
