@@ -2,64 +2,49 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SDN 62 TAJONG - Digital Classroom</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6366f1; --accent: #f59e0b; }
-        body {
-            margin: 0; min-height: 100vh; font-family: 'Poppins', sans-serif; color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.85)), 
-                        url('sekolah.jpg'); /* Pastikan file sekolah.jpg ada di Github */
-            background-size: cover; background-position: center; background-attachment: fixed;
-            padding: 15px; box-sizing: border-box;
-        }
-        .login-container {
-            width: 100%; max-width: 380px; background: rgba(255, 255, 255, 0.1); 
-            backdrop-filter: blur(20px); border-radius: 30px; padding: 40px 25px; 
-            text-align: center; border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-        h2 { font-weight: 800; margin-bottom: 5px; color: var(--primary); }
-        input {
-            width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 15px; background: rgba(0, 0, 0, 0.3); color: #fff;
-            margin-bottom: 12px; font-size: 16px; outline: none; box-sizing: border-box;
-        }
-        .btn-login {
-            width: 100%; padding: 15px; border: none; border-radius: 15px;
-            background: linear-gradient(135deg, #6366f1, #a855f7); color: white;
-            font-weight: 700; cursor: pointer; text-transform: uppercase;
-        }
-        #game-ui { display: none; width: 100%; max-width: 450px; text-align: center; }
-        .meja-tengah { 
-            background: rgba(15, 23, 42, 0.9); padding: 30px; border-radius: 25px; 
-            border: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px;
-        }
-        .btn-jawab {
-            background: #10b981; width: 100%; padding: 20px; border-radius: 20px;
-            border: none; color: white; font-weight: 800; font-size: 18px;
-            box-shadow: 0 10px 25px rgba(16,185,129,0.4); cursor: pointer; display: none;
-        }
+        /* CSS ASLI BAPAK */
+        :root { --primary: #6366f1; --secondary: #a855f7; --bg-dark: #0f172a; --glass: rgba(255, 255, 255, 0.1); --border: rgba(255, 255, 255, 0.2); --accent: #f59e0b; }
+        *, *::before, *::after { box-sizing: border-box; touch-action: manipulation; }
+        body { margin: 0; min-height: 100vh; font-family: 'Poppins', sans-serif; color: #fff; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.85)), url('sekolah.jpg'); background-size: cover; background-position: center; background-attachment: fixed; background-color: var(--bg-dark); padding: 15px; overflow-x: hidden; }
+        .login-container { width: 100%; max-width: 380px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 30px; padding: 40px 25px; text-align: center; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: fadeIn 0.8s ease; }
+        h2 { font-weight: 800; letter-spacing: 1px; margin-bottom: 5px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        input { width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; background: rgba(0, 0, 0, 0.3); color: #fff; outline: none; margin-bottom: 12px; font-size: 16px; transition: 0.3s; }
+        .btn-login { width: 100%; padding: 15px; border: none; border-radius: 15px; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; font-weight: 700; cursor: pointer; text-transform: uppercase; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); }
+        #game-ui { display: none; width: 100%; max-width: 500px; animation: fadeIn 0.5s ease; }
+        .meja-area { width: 240px; height: 240px; background: rgba(255,255,255,0.05); border-radius: 50%; margin: 30px auto; position: relative; border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center; }
+        .meja-tengah { width: 85%; background: rgba(15, 23, 42, 0.9); padding: 20px; border-radius: 25px; border: 1px solid var(--border); text-align: center; min-height: 120px; z-index: 2; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .kursi { position: absolute; width: 45px; height: 45px; background: #1e293b; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--border); font-size: 8px; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .bubble-guru { background: var(--accent); color: #000; padding: 12px; border-radius: 15px; font-size: 12px; font-weight: 800; border: 2px solid white; margin-bottom: 10px; animation: popIn 0.4s both; }
+        .btn-panggil { background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 10px 20px; border-radius: 12px; font-size: 11px; font-weight: 600; cursor: pointer; margin-top: 20px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div id="login-section" class="login-container">
-        <h2>SDN 62 TAJONG</h2>
-        <div style="font-size: 11px; margin-bottom: 25px; color: #cbd5e1; letter-spacing: 2px;">DIGITAL CLASSROOM</div>
+        <h2 style="color:var(--primary)">SD NEGERI 62 TAJONG</h2>
+        <div style="font-size: 11px; margin-bottom: 25px; color: #cbd5e1; font-weight: 300; letter-spacing: 2px;">CLASSROOM Powered By Riski</div>
         <input id="nama" type="text" placeholder="Nama Lengkap">
-        <input id="meja" type="text" placeholder="Nomor Meja">
+        <input id="kode" type="text" placeholder="Nama Panggilan">
         <button class="btn-login" onclick="gabung()">MASUK KELAS</button>
     </div>
 
     <div id="game-ui">
-        <div id="status-info" style="margin-bottom:15px; font-size:12px; color:#cbd5e1;"></div>
-        <div class="meja-tengah">
-            <div id="soal-display" style="font-size:16px; font-weight:600;">MENUNGGU INSTRUKSI GURU...</div>
+        <div id="status-info" style="text-align:center; font-size:11px; color:#94a3b8; margin-bottom:10px;"></div>
+        <div class="meja-area" id="meja">
+            <div class="meja-tengah">
+                <div id="soal-display" style="font-size:12px; font-weight:600;">MENUNGGU INSTRUKSI GURU...</div>
+                <div id="balasan-guru-area"></div>
+            </div>
         </div>
-        <button id="btn-jawab-main" class="btn-jawab" onclick="jawab()">🖐️ SAYA MAU JAWAB!</button>
+        <div style="text-align: center;">
+            <button id="btn-jawab-main" style="background:#10b981; width:100%; max-width:350px; padding: 18px; border-radius: 20px; border:none; color:white; font-weight:800; font-size:16px; display:none;" onclick="jawab()">🖐️ SAYA MAU JAWAB!</button>
+            <br><button class="btn-panggil" onclick="panggilGuru()">🔔 BANTUAN GURU</button>
+        </div>
     </div>
 
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
@@ -70,31 +55,34 @@
 
         function gabung() {
             const nama = document.getElementById('nama').value;
-            const meja = document.getElementById('meja').value;
-            if(!nama || !meja) return alert("Lengkapi data!");
+            const kode = document.getElementById('kode').value;
+            if(!nama || !kode) return alert("Lengkapi data login!");
             sessionStorage.setItem('nama', nama);
-            channel.publish('siswa_join', { nama, meja });
+            sessionStorage.setItem('kode', kode);
+            channel.publish('siswa_join', { nama, meja: kode });
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('game-ui').style.display = 'block';
-            document.getElementById('status-info').innerHTML = `👤 <b>${nama}</b> | Meja ${meja}`;
+            document.getElementById('status-info').innerHTML = `<b>${nama}</b> | Meja <b>${kode}</b>`;
         }
 
         channel.subscribe('soal_baru', (msg) => {
-            document.getElementById('soal-display').innerHTML = msg.data.teks;
-            const btn = document.getElementById('btn-jawab-main');
-            btn.style.display = 'block';
-            btn.disabled = false;
-            btn.innerText = "🖐️ SAYA MAU JAWAB!";
-            btn.style.opacity = "1";
+            document.getElementById('soal-display').innerHTML = `<b>Soal:</b><br>${msg.data.teks}`;
+            document.getElementById('btn-jawab-main').style.display = 'inline-block';
+            document.getElementById('btn-jawab-main').disabled = false;
+            document.getElementById('btn-jawab-main').innerText = "🖐️ SAYA MAU JAWAB!";
         });
 
         function jawab() {
             const nama = sessionStorage.getItem('nama');
             channel.publish('siswa_menjawab', { nama });
-            const btn = document.getElementById('btn-jawab-main');
-            btn.innerText = "TERKIRIM!";
-            btn.disabled = true;
-            btn.style.opacity = "0.6";
+            document.getElementById('btn-jawab-main').innerText = "MENUNGGU GURU...";
+            document.getElementById('btn-jawab-main').disabled = true;
+        }
+
+        function panggilGuru() {
+            const nama = sessionStorage.getItem('nama');
+            channel.publish('siswa_menjawab', { nama: "🚨 BANTUAN: " + nama });
+            alert("Memanggil guru...");
         }
     </script>
 </body>
