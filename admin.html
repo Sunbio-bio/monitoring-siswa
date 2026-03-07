@@ -2,76 +2,46 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MASTER CONTROL - SDN 62 TAJONG</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #6366f1; --bg-dark: #0f172a; --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); }
         body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
-        /* Sidebar */
         aside { width: 280px; background: #1e293b; padding: 20px; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
-        h2 { color: var(--primary); font-size: 18px; margin-bottom: 5px; }
-        
-        /* Main Area */
-        main { flex: 1; display: flex; flex-direction: column; padding: 20px; background: #0f172a; }
+        main { flex: 1; display: flex; flex-direction: column; padding: 20px; }
         .log-container { flex: 1; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 15px; overflow-y: auto; border: 1px solid var(--border); }
-        
-        /* Controls */
         .control-panel { background: #1e293b; padding: 20px; border-top: 2px solid var(--primary); }
-        .input-group { display: flex; gap: 10px; margin-top: 10px; }
-        
-        input, select { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #0f172a; color: white; outline: none; }
-        
-        .btn { padding: 12px 20px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        input, select { padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #0f172a; color: white; outline: none; }
+        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
         .btn-send { background: var(--primary); color: white; }
-        .btn-random { background: #f59e0b; color: #000; width: 100%; margin-bottom: 10px; }
-        .btn-clear { background: #ef4444; color: white; font-size: 11px; padding: 5px 10px; }
-
-        .item-log { background: var(--glass); padding: 12px; border-radius: 12px; margin-bottom: 8px; border-left: 4px solid var(--primary); animation: slideIn 0.3s ease; }
-        .item-log.penting { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
-        
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-        
-        .footer { font-size: 10px; color: #64748b; margin-top: auto; padding-top: 20px; }
+        .btn-random { background: #f59e0b; color: black; width: 100%; margin-bottom: 10px; }
+        .item-log { background: var(--glass); padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 4px solid var(--primary); }
+        .footer { font-size: 10px; color: #64748b; margin-top: auto; }
     </style>
 </head>
 <body>
 
     <aside>
         <h2>SDN 62 TAJONG</h2>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: -5px;">MASTER CONTROL GURU</p>
-        <hr style="width: 100%; opacity: 0.1; margin: 15px 0;">
-        
+        <p style="font-size: 11px; color: #94a3b8;">MONITORING GURU</p>
         <button class="btn btn-random" onclick="kirimSoalAcak()">🎲 KIRIM SOAL ACAK</button>
-        
         <div style="margin-top: 10px;">
-            <label style="font-size: 11px; color: #94a3b8;">BALAS KE SISWA:</label>
-            <select id="pilih-siswa" style="width: 100%; margin-top: 5px;">
-                <option value="SEMUA">SEMUA SISWA</option>
-            </select>
+            <label style="font-size: 11px; color: #94a3b8;">BALAS KE:</label>
+            <select id="pilih-siswa" style="width: 100%;"><option value="SEMUA">SEMUA SISWA</option></select>
         </div>
-
-        <div class="footer">
-            Portal Sekolah Digital © 2026<br>
-            Developed by Riski OPS 62 Tajong
-        </div>
+        <div class="footer">Portal Sekolah Digital © 2026<br>Developed by Riski OPS 62 Tajong</div>
     </aside>
 
     <main>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="margin: 0;">LOG AKTIVITAS KELAS</h3>
-            <button class="btn btn-clear" onclick="hapusLog()">🗑️ BERSIHKAN LOG</button>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>LOG AKTIVITAS</h3>
+            <button class="btn" style="background:#ef4444; color:white; font-size:10px;" onclick="document.getElementById('monitor-log').innerHTML=''">🗑️ BERSIHKAN LOG</button>
         </div>
-
-        <div class="log-container" id="monitor-log">
-            </div>
-
+        <div class="log-container" id="monitor-log"></div>
         <div class="control-panel">
-            <label style="font-size: 12px; color: #94a3b8;">KIRIM SOAL MANUAL / PESAN:</label>
-            <div class="input-group">
-                <input id="input-soal-manual" placeholder="Ketik pertanyaan atau pesan di sini...">
-                <button class="btn btn-send" onclick="kirimSoalManual()">KIRIM KE SISWA</button>
+            <div style="display:flex; gap:10px;">
+                <input id="input-manual" style="flex:1" placeholder="Ketik soal atau pesan manual...">
+                <button class="btn btn-send" onclick="kirimManual()">KIRIM KE SISWA</button>
             </div>
         </div>
     </main>
@@ -79,85 +49,42 @@
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <script>
         const ably = new Ably.Realtime('Lqd-SA.02uOJw:5Q9fS13uwWhBLZJsqF9XA4gjNMzowZHCq2jJ9kxDdx8');
-        const channel = ably.channels.get('kelas-sdn62');
-        
-        const bankSoal = [
-            "Apa lambang sila ke-2 Pancasila?",
-            "Berapa hasil dari 150 + 250?",
-            "Siapa presiden pertama Indonesia?",
-            "Apa ibu kota negara Indonesia saat ini?",
-            "Sebutkan 3 benda padat di sekitarmu!",
-            "Berapa jumlah provinsi di Indonesia?"
-        ];
-
-        // FITUR RECOVERY (Saat Refresh, Log tidak hilang total dari layar jika baru saja terjadi)
-        window.onload = function() {
-            addLog("Sistem Aktif. Menunggu siswa...");
-        };
+        const channel = ably.channels.get('sdn62-tajong-main');
+        const bankSoal = ["Sebutkan sila ke-3!", "Berapa 12x5?", "Siapa Presiden RI ke-1?", "Apa Ibu Kota Indonesia?", "Sebutkan 3 benda gas!"];
 
         function kirimSoalAcak() {
-            const soal = bankSoal[Math.floor(Math.random() * bankSoal.length)];
-            channel.publish('pesan_guru', { teks: soal, untuk: "SEMUA" });
-            addLog("📢 BROADCAST SOAL ACAK: " + soal, true);
+            const s = bankSoal[Math.floor(Math.random() * bankSoal.length)];
+            channel.publish('pesan_guru', { teks: s, untuk: 'SEMUA' });
+            addLog("📢 SOAL ACAK TERKIRIM: " + s);
         }
 
-        function kirimSoalManual() {
-            const teks = document.getElementById('input-soal-manual').value;
-            const untuk = document.getElementById('pilih-siswa').value;
-            if(!teks) return alert("Ketik soalnya dulu, Pak!");
-
-            channel.publish('pesan_guru', { teks: teks, untuk: untuk });
-            addLog(`✅ TERKIRIM (${untuk}): ${teks}`);
-            document.getElementById('input-soal-manual').value = "";
+        function kirimManual() {
+            const t = document.getElementById('input-manual').value;
+            const u = document.getElementById('pilih-siswa').value;
+            if(!t) return;
+            channel.publish('pesan_guru', { teks: t, untuk: u });
+            addLog(`✅ TERKIRIM (${u}): ${t}`);
+            document.getElementById('input-manual').value = "";
         }
 
-        function hapusLog() {
-            if(confirm("Hapus semua log aktivitas?")) {
-                document.getElementById('monitor-log').innerHTML = "";
-            }
-        }
-
-        // Menerima Siswa Baru
-        channel.subscribe('siswa_join', (msg) => {
-            addLog(`👤 SISWA MASUK: <b>${msg.data.nama}</b> (Meja ${msg.data.meja})`);
-            
-            // Tambahkan ke dropdown balasan jika belum ada
-            const select = document.getElementById('pilih-siswa');
-            const exists = Array.from(select.options).some(opt => opt.value === msg.data.nama);
-            if(!exists) {
-                const opt = document.createElement('option');
-                opt.value = msg.data.nama;
-                opt.text = msg.data.nama;
-                select.appendChild(opt);
-            }
-        });
-
-        // Menerima Aksi Siswa (Jawab, Bantuan, Chat)
         channel.subscribe('siswa_aksi', (msg) => {
-            let icon = "💬";
-            let kelas = "";
-            
-            if(msg.data.aksi === 'MENJAWAB') {
-                icon = "🖐️";
-                kelas = "penting";
-            } else if(msg.data.aksi === 'BUTUH BANTUAN') {
-                icon = "🚨";
-                kelas = "penting";
+            const d = msg.data;
+            addLog(`🔔 <b>${d.nama}</b> (Meja ${d.meja}): ${d.aksi}`);
+            if(d.aksi === 'MASUK KELAS') {
+                const sel = document.getElementById('pilih-siswa');
+                if(!Array.from(sel.options).some(o => o.value === d.nama)) {
+                    const o = document.createElement('option'); o.value = d.nama; o.text = d.nama; sel.add(o);
+                }
             }
-
-            const pesan = msg.data.teks ? `: ${msg.data.teks}` : "";
-            addLog(`${icon} <b>${msg.data.nama}</b> (Meja ${msg.data.meja}) ${msg.data.aksi}${pesan}`, kelas === "penting");
-            
-            // Bunyi Bell
             new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
         });
 
-        function addLog(html, isPenting) {
+        function addLog(h) {
             const div = document.createElement('div');
-            div.className = 'item-log' + (isPenting ? ' penting' : '');
-            div.innerHTML = `<small>${new Date().toLocaleTimeString()}</small><br>${html}`;
-            const logBox = document.getElementById('monitor-log');
-            logBox.prepend(div);
+            div.className = 'item-log';
+            div.innerHTML = `<small>${new Date().toLocaleTimeString()}</small><br>${h}`;
+            const m = document.getElementById('monitor-log');
+            m.prepend(div);
         }
     </script>
 </body>
