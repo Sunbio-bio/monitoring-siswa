@@ -8,93 +8,131 @@
     <style>
         :root { --primary: #6366f1; --secondary: #a855f7; --bg-dark: #0f172a; --glass: rgba(255, 255, 255, 0.1); --border: rgba(255, 255, 255, 0.2); --accent: #f59e0b; }
         body { margin: 0; min-height: 100vh; font-family: 'Poppins', sans-serif; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.9)), url('sekolah.jpg'); background-size: cover; background-position: center; padding: 20px; }
-        .box { width: 100%; max-width: 400px; background: var(--glass); backdrop-filter: blur(20px); border-radius: 30px; padding: 30px; border: 1px solid var(--border); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 14px; border-radius: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 16px; box-sizing: border-box; }
+        .box { width: 100%; max-width: 400px; background: var(--glass); backdrop-filter: blur(20px); border-radius: 30px; padding: 30px; border: 1px solid var(--border); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; }
         .btn { width: 100%; padding: 18px; border-radius: 20px; border: none; font-weight: 800; cursor: pointer; text-transform: uppercase; margin-bottom: 15px; transition: 0.3s; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; margin-top: 10px; }
-        .btn-jawab { background: #10b981; color: white; font-size: 18px; box-shadow: 0 10px 20px rgba(16,185,129,0.3); }
-        .btn-bantuan { background: #ef4444; color: white; font-size: 16px; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3); }
-        #game-ui { display: none; width: 100%; max-width: 400px; }
-        .info-msg { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; margin-bottom: 20px; border-left: 4px solid var(--accent); text-align: left; font-size: 14px; }
-        .footer-login { margin-top: 25px; font-size: 10px; color: #94a3b8; text-align: center; line-height: 1.6; }
+        .btn:disabled { background: #475569 !important; cursor: not-allowed; opacity: 0.6; }
+        .btn-jawab { background: #10b981; color: white; font-size: 18px; }
+        .btn-alih { background: #f59e0b; color: black; font-size: 14px; display: none; }
+        #timer { font-size: 24px; font-weight: 800; color: #ef4444; margin: 10px 0; display: none; }
+        .status-lock { font-size: 12px; color: #ef4444; margin-bottom: 10px; font-weight: bold; display: none; }
+        input { width: 100%; padding: 14px; border-radius: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: white; outline: none; margin-bottom: 10px; box-sizing: border-box; }
+        .footer-login { margin-top: 25px; font-size: 10px; color: #94a3b8; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div id="login-section" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+    <div id="login-section">
         <div class="box">
-            <h2 style="color:var(--primary); margin-bottom:0;">SDN 62 TAJONG</h2>
-            <p style="font-size:10px; margin-bottom:25px; color:#94a3b8; letter-spacing: 2px;">PORTAL DIGITAL CLASSROOM</p>
-            <input id="nama" type="text" placeholder="Nama Lengkap Siswa">
-            <input id="meja" style="margin-top: 10px;" type="text" placeholder="Nomor Meja">
-            <button class="btn btn-primary" onclick="gabung()">MASUK KELAS</button>
+            <h2 style="color:var(--primary); margin:0;">SDN 62 TAJONG</h2>
+            <p style="font-size:10px; margin-bottom:20px;">PORTAL DIGITAL CLASSROOM</p>
+            <input id="nama" type="text" placeholder="Nama Lengkap">
+            <input id="meja" type="text" placeholder="Nomor Meja">
+            <button class="btn" style="background:var(--primary); color:white" onclick="gabung()">MASUK KELAS</button>
         </div>
         <div class="footer-login">Portal Sekolah Digital © 2026<br>Developed by Riski OPS 62 Tajong</div>
     </div>
 
-    <div id="game-ui" class="box">
-        <div id="user-display" style="font-size: 13px; color: #cbd5e1; margin-bottom: 20px; font-weight: 600; border-bottom: 1px solid var(--border); padding-bottom: 10px;"></div>
-        <div class="info-msg">
-            <b>INFO GURU:</b><br>
-            <span id="teks-soal">Menunggu instruksi atau soal dari guru...</span>
+    <div id="game-ui" class="box" style="display:none;">
+        <div id="user-display" style="font-size: 12px; margin-bottom: 15px; opacity: 0.8;"></div>
+        
+        <div style="background:rgba(0,0,0,0.4); padding:15px; border-radius:15px; margin-bottom:15px; border-left:4px solid var(--accent);">
+            <b>INFO GURU:</b><br><span id="teks-soal">Menunggu soal...</span>
         </div>
-        <button class="btn btn-jawab" onclick="aksiSiswa('MENJAWAB')">🖐️ SAYA MAU JAWAB</button>
-        <button class="btn btn-bantuan" onclick="aksiSiswa('BUTUH BANTUAN')">🚨 BANTUAN GURU</button>
-        <div style="margin-top: 10px; display: flex; gap: 8px;">
-            <input id="chat-input" placeholder="Balas guru..." style="margin-bottom:0; font-size: 14px;">
-            <button onclick="kirimChat()" style="background:var(--primary); border:none; border-radius:12px; padding:0 20px; color:white; font-weight:bold;">Kirim</button>
-        </div>
+
+        <div id="status-lock" class="status-lock">Seseorang sedang menjawab...</div>
+        <div id="timer">05:00</div>
+
+        <button id="btn-jawab-main" class="btn btn-jawab" onclick="claimJawaban()">🖐️ SAYA MAU JAWAB</button>
+        <button id="btn-alihkan" class="btn btn-alih" onclick="alihkanJawaban()">❌ TIDAK TAHU (ALIHKAN)</button>
+        
+        <button class="btn" style="background:#ef4444; color:white; font-size:12px;" onclick="aksiSiswa('BUTUH BANTUAN')">🚨 BANTUAN GURU</button>
     </div>
 
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <script>
         const ably = new Ably.Realtime('Lqd-SA.02uOJw:5Q9fS13uwWhBLZJsqF9XA4gjNMzowZHCq2jJ9kxDdx8');
-        const channel = ably.channels.get('sdn62-tajong-main'); // Nama channel disatukan
+        const channel = ably.channels.get('sdn62-tajong-main');
+        let timerInterval;
 
         window.onload = function() {
-            const saveNama = sessionStorage.getItem('nama');
-            const saveMeja = sessionStorage.getItem('meja');
-            if (saveNama) {
-                bukaMenuSiswa(saveNama, saveMeja);
-                // Jangan kirim publish 'siswa_join' di sini agar tidak muncul log double saat refresh
-            }
+            if(sessionStorage.getItem('nama')) bukaMenuSiswa(sessionStorage.getItem('nama'), sessionStorage.getItem('meja'));
         };
 
         function gabung() {
-            const nama = document.getElementById('nama').value;
-            const meja = document.getElementById('meja').value;
-            if(!nama) return alert("Isi nama!");
-            sessionStorage.setItem('nama', nama);
-            sessionStorage.setItem('meja', meja);
-            channel.publish('siswa_aksi', { nama, meja, aksi: 'MASUK KELAS' });
-            bukaMenuSiswa(nama, meja);
+            const n = document.getElementById('nama').value;
+            const m = document.getElementById('meja').value;
+            if(!n) return alert("Isi nama!");
+            sessionStorage.setItem('nama', n);
+            sessionStorage.setItem('meja', m);
+            channel.publish('siswa_aksi', { nama: n, meja: m, aksi: 'MASUK KELAS' });
+            bukaMenuSiswa(n, m);
         }
 
-        function bukaMenuSiswa(nama, meja) {
+        function bukaMenuSiswa(n, m) {
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('game-ui').style.display = 'block';
-            document.getElementById('user-display').innerText = `👤 ${nama} | Meja ${meja}`;
+            document.getElementById('user-display').innerText = `👤 ${n} | Meja ${m}`;
         }
 
-        channel.subscribe('pesan_guru', (msg) => {
-            if(!msg.data.untuk || msg.data.untuk === 'SEMUA' || msg.data.untuk === sessionStorage.getItem('nama')) {
-                document.getElementById('teks-soal').innerHTML = msg.data.teks;
-                new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
+        // Menerima Instruksi Lock/Unlock dari Server
+        channel.subscribe('sistem_kendali', (msg) => {
+            const d = msg.data;
+            const btn = document.getElementById('btn-jawab-main');
+            const status = document.getElementById('status-lock');
+            const timerDisplay = document.getElementById('timer');
+            const btnAlih = document.getElementById('btn-alihkan');
+
+            if(d.tipe === 'LOCK') {
+                btn.disabled = true;
+                status.style.display = 'block';
+                status.innerText = `🔒 TERKUNCI: ${d.oleh} Sedang Menjawab...`;
+                
+                if(d.oleh === sessionStorage.getItem('nama')) {
+                    btnAlih.style.display = 'block';
+                    timerDisplay.style.display = 'block';
+                    startTimer(300); // 5 Menit
+                }
+            } else {
+                // UNLOCK
+                btn.disabled = false;
+                btn.innerText = "🖐️ SAYA MAU JAWAB";
+                status.style.display = 'none';
+                btnAlih.style.display = 'none';
+                timerDisplay.style.display = 'none';
+                clearInterval(timerInterval);
             }
         });
 
-        function aksiSiswa(tipe) {
-            const nama = sessionStorage.getItem('nama');
-            const meja = sessionStorage.getItem('meja');
-            channel.publish('siswa_aksi', { nama, meja, aksi: tipe });
-            alert("Berhasil dikirim!");
+        channel.subscribe('pesan_guru', (msg) => {
+            document.getElementById('teks-soal').innerHTML = msg.data.teks;
+            new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
+        });
+
+        function claimJawaban() {
+            const n = sessionStorage.getItem('nama');
+            channel.publish('request_lock', { nama: n });
         }
 
-        function kirimChat() {
-            const teks = document.getElementById('chat-input').value;
-            if(!teks) return;
-            aksiSiswa('PESAN: ' + teks);
-            document.getElementById('chat-input').value = "";
+        function alihkanJawaban() {
+            channel.publish('request_unlock', { alasan: 'DIALIHKAN' });
+        }
+
+        function startTimer(duration) {
+            let timer = duration, minutes, seconds;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+                document.getElementById('timer').textContent = `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+                if (--timer < 0) {
+                    clearInterval(timerInterval);
+                    channel.publish('request_unlock', { alasan: 'WAKTU HABIS' });
+                }
+            }, 1000);
+        }
+
+        function aksiSiswa(t) {
+            channel.publish('siswa_aksi', { nama: sessionStorage.getItem('nama'), meja: sessionStorage.getItem('meja'), aksi: t });
         }
     </script>
 </body>
