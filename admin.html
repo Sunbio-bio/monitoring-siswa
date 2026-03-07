@@ -3,33 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GURU - SDN 62 TAJONG</title>
+    <title>ADMIN - SDN 62 TAJONG</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #0f172a; color: white; padding: 20px; text-align: center; }
-        .box { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); max-width: 500px; margin: auto; }
-        input { width: 90%; padding: 15px; border-radius: 10px; border: none; margin-bottom: 10px; font-size: 16px; }
-        button { background: #6366f1; color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 90%; margin-top: 10px; }
-        .log { margin-top: 20px; text-align: left; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 15px; font-size: 13px; height: 300px; overflow-y: auto; border: 1px solid #334155; }
-        .item { padding: 10px; border-bottom: 1px solid #1e293b; color: #cbd5e1; }
-        .alert { color: #f59e0b; font-weight: bold; background: rgba(245,158,11,0.1); padding: 5px; border-radius: 5px; animation: pop 0.3s ease; }
-        @keyframes pop { from {transform: scale(0.8);} to {transform: scale(1);} }
+        body { margin: 0; background: #0f172a; color: white; font-family: 'Poppins', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { color: #6366f1; text-align: center; }
+        input { width: 100%; padding: 15px; border-radius: 12px; border: none; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; border-radius: 12px; border: none; background: #6366f1; color: white; font-weight: 800; cursor: pointer; }
+        .log-container { margin-top: 20px; width: 100%; max-width: 500px; }
+        .log-item { background: rgba(255,255,255,0.05); margin-bottom: 10px; padding: 15px; border-radius: 15px; border-left: 5px solid #6366f1; animation: fadeIn 0.5s ease; }
+        .alert-item { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <h2>PANEL GURU SDN 62</h2>
-    <div class="box">
-        <p style="font-size: 12px; color: #94a3b8;">INPUT PERTANYAAN</p>
-        <input id="input-soal" type="text" placeholder="Contoh: 5 + 5 = ...">
-        <button onclick="kirimSoal()" style="background: #6366f1;">🚀 SEBARKAN SOAL</button>
-
-        <div class="log" id="log-aktivitas">
-            <div style="color: #6366f1; font-weight: 800; margin-bottom: 10px; border-bottom: 2px solid #6366f1; padding-bottom: 5px;">NOTIFIKASI KELAS</div>
-        </div>
-        
-        <button onclick="location.reload()" style="background: #475569; font-size: 11px; padding: 8px;">🔄 RESET PANEL</button>
+    <h2>MONITORING GURU</h2>
+    <div class="card">
+        <input id="input-soal" type="text" placeholder="Masukkan pertanyaan untuk siswa...">
+        <button onclick="kirimSoal()">🚀 SEBARKAN SOAL SEKARANG</button>
     </div>
+
+    <div class="log-container" id="log-list">
+        </div>
 
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <script>
@@ -39,28 +36,27 @@
 
         function kirimSoal() {
             const teks = document.getElementById('input-soal').value;
-            if(!teks) return alert("Ketik soal dulu!");
+            if(!teks) return alert("Isi soal dulu Pak!");
             channel.publish('soal_baru', { teks });
-            addLog(`✅ Soal dikirim: "${teks}"`);
+            addLog(`✅ Soal dikirim: "${teks}"`, false);
             document.getElementById('input-soal').value = "";
         }
 
         channel.subscribe('siswa_join', (msg) => {
-            addLog(`👤 <b>${msg.data.nama}</b> masuk dari Meja <b>${msg.data.meja}</b>`);
+            addLog(`👤 <b>${msg.data.nama}</b> masuk dari Meja ${msg.data.meja}`, false);
         });
 
         channel.subscribe('siswa_menjawab', (msg) => {
-            addLog(`<span class="alert">🖐️ ${msg.data.nama.toUpperCase()} MAU JAWAB!</span>`);
-            // Bunyi bel
+            addLog(`🖐️ <b>${msg.data.nama}</b> Menekan Tombol Jawab!`, true);
             new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
         });
 
-        function addLog(html) {
+        function addLog(html, isAlert) {
             const div = document.createElement('div');
-            div.className = 'item';
+            div.className = 'log-item' + (isAlert ? ' alert-item' : '');
             div.innerHTML = html;
-            const log = document.getElementById('log-aktivitas');
-            log.prepend(div);
+            const list = document.getElementById('log-list');
+            list.prepend(div);
         }
     </script>
 </body>
