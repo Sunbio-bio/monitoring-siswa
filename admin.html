@@ -7,23 +7,36 @@
     <style>
         :root { --primary: #6366f1; --bg-dark: #0f172a; --glass: rgba(255, 255, 255, 0.05); }
         body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        aside { width: 280px; background: #1e293b; padding: 20px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; }
+        aside { width: 260px; background: #1e293b; padding: 20px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; }
         main { flex: 1; padding: 20px; display: flex; flex-direction: column; }
         .log-box { flex: 1; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 15px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); }
-        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
-        .item-log { background: var(--glass); padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 4px solid var(--primary); font-size: 13px; }
-        .footer { font-size: 10px; margin-top: auto; opacity: 0.6; }
+        .btn { padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        
+        /* Item Log Style */
+        .item-log { background: var(--glass); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 5px solid var(--primary); animation: slideIn 0.3s; }
+        .log-bantuan { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+        .log-jawaban { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        
+        /* Kolom Balas Cepat */
+        .reply-box { margin-top: 10px; display: flex; gap: 5px; }
+        .reply-box input { flex: 1; padding: 8px; border-radius: 5px; border: none; background: rgba(255,255,255,0.1); color: white; font-size: 12px; }
+        .btn-send-mini { background: var(--primary); color: white; font-size: 11px; padding: 5px 12px; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .footer { font-size: 10px; margin-top: auto; opacity: 0.5; }
     </style>
 </head>
 <body>
 
     <aside>
-        <h2 style="color:var(--primary)">SDN 62 TAJONG</h2>
-        <button class="btn" style="background:#f59e0b;" onclick="kirimSoal()">🎲 KIRIM SOAL ACAK</button>
-        <button class="btn" style="background:#ef4444; color:white" onclick="paksaBuka()">🔓 BUKA PAKSA TOMBOL</button>
+        <h2 style="color:var(--primary); font-size: 18px;">SDN 62 TAJONG</h2>
+        <button class="btn" style="background:#f59e0b; width:100%; margin-bottom:10px;" onclick="kirimSoal()">🎲 KIRIM SOAL ACAK</button>
+        <button class="btn" style="background:#ef4444; color:white; width:100%" onclick="paksaBuka()">🔓 BUKA TOMBOL SISWA</button>
+        
         <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; font-size:12px; margin-top:10px;">
-            Status: <b id="stat-t" style="color:#10b981">TERBUKA</b>
+            Status Tombol: <b id="stat-t" style="color:#10b981">TERBUKA</b>
         </div>
+
         <div class="footer">
             Portal Sekolah Digital © 2026<br>Developed by Riski OPS 62 Tajong
         </div>
@@ -31,15 +44,16 @@
 
     <main>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h3 style="margin:0">LOG AKTIVITAS</h3>
-            <button class="btn" style="background:#475569; color:white; font-size:11px; margin:0;" onclick="clearLog()">🗑️ CLEAR LOG</button>
+            <h3 style="margin:0">MONITORING KELAS</h3>
+            <button class="btn" style="background:#475569; color:white; font-size:11px;" onclick="clearLog()">🗑️ BERSIHKAN LAYAR</button>
         </div>
         
-        <div class="log-box" id="monitor-log"></div>
+        <div class="log-box" id="monitor-log">
+            </div>
 
-        <div style="margin-top:15px; display:flex; gap:10px;">
-            <input id="m-soal" style="flex:1; padding:12px; border-radius:10px; background:#1e293b; color:white; border:none;" placeholder="Ketik soal manual...">
-            <button class="btn" style="background:var(--primary); color:white; margin:0;" onclick="manual()">KIRIM</button>
+        <div style="margin-top:15px; display:flex; gap:10px; background: #1e293b; padding: 15px; border-radius: 15px;">
+            <input id="m-soal" style="flex:1; padding:12px; border-radius:10px; background:#0f172a; color:white; border:1px solid #334155;" placeholder="Ketik soal manual ke semua siswa...">
+            <button class="btn" style="background:var(--primary); color:white; width: 100px;" onclick="manual()">KIRIM</button>
         </div>
     </main>
 
@@ -49,7 +63,7 @@
         const channel = ably.channels.get('sdn62-tajong-main');
         let isLocked = false;
 
-        // LOAD LOG DARI STORAGE AGAR TIDAK HILANG SAAT REFRESH
+        // Load logs
         window.onload = () => {
             const savedLog = localStorage.getItem('sdn62_logs');
             if(savedLog) document.getElementById('monitor-log').innerHTML = savedLog;
@@ -59,7 +73,7 @@
             if(!isLocked) {
                 isLocked = true;
                 channel.publish('sistem_kendali', { tipe: 'LOCK', oleh: msg.data.nama });
-                addLog(`🔒 <b>${msg.data.nama}</b> mengunci tombol.`);
+                addLog(`🔒 <b>${msg.data.nama}</b> Berhasil Mengunci Tombol`, 'log-jawaban');
                 document.getElementById('stat-t').innerText = "TERKUNCI: " + msg.data.nama;
                 document.getElementById('stat-t').style.color = "#ef4444";
                 new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
@@ -69,47 +83,86 @@
         channel.subscribe('request_unlock', (msg) => {
             isLocked = false;
             channel.publish('sistem_kendali', { tipe: 'UNLOCK' });
-            addLog(`🔓 Tombol Terbuka (${msg.data.alasan})`);
+            addLog(`🔓 Tombol Sekarang Terbuka (${msg.data.alasan})`, '');
             document.getElementById('stat-t').innerText = "TERBUKA";
             document.getElementById('stat-t').style.color = "#10b981";
         });
 
+        // MENERIMA AKSI SISWA (CHAT / BANTUAN)
         channel.subscribe('siswa_aksi', (msg) => {
-            addLog(`👤 <b>${msg.data.nama}</b>: ${msg.data.aksi}`);
+            const d = msg.data;
+            let tipeKelas = "";
+            if(d.aksi.includes("BANTUAN")) tipeKelas = "log-bantuan";
+            if(d.aksi.includes("JAWABAN")) tipeKelas = "log-jawaban";
+
+            // Tambahkan Log dengan Kolom Balasan Otomatis
+            addLogBalasLangsung(d.nama, d.meja, d.aksi, tipeKelas);
+            new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
         });
+
+        function addLogBalasLangsung(nama, meja, aksi, kelas) {
+            const div = document.createElement('div');
+            div.className = `item-log ${kelas}`;
+            const idInput = 'input-' + Math.floor(Math.random() * 1000);
+            
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; font-size:10px; opacity:0.7; margin-bottom:5px;">
+                    <span>Meja ${meja} | ${new Date().toLocaleTimeString()}</span>
+                    <b>${nama}</b>
+                </div>
+                <div style="font-size:14px; font-weight:bold;">${aksi}</div>
+                
+                <div class="reply-box">
+                    <input id="${idInput}" placeholder="Balas ke ${nama}...">
+                    <button class="btn btn-send-mini" onclick="balasSatuSiswa('${nama}', '${idInput}')">BALAS</button>
+                </div>
+            `;
+            const logBox = document.getElementById('monitor-log');
+            logBox.prepend(div);
+            localStorage.setItem('sdn62_logs', logBox.innerHTML);
+        }
+
+        function balasSatuSiswa(nama, inputId) {
+            const teks = document.getElementById(inputId).value;
+            if(!teks) return alert("Ketik pesan balasan dulu!");
+            
+            channel.publish('pesan_guru', { teks: "BALASAN GURU: " + teks, untuk: nama });
+            alert("Terbalas ke " + nama);
+            document.getElementById(inputId).value = "";
+            addLog(`✅ Bapak membalas <b>${nama}</b>: ${teks}`, '');
+        }
+
+        function addLog(h, kelas) {
+            const div = document.createElement('div');
+            div.className = 'item-log ' + kelas;
+            div.innerHTML = `<small>${new Date().toLocaleTimeString()}</small> | ${h}`;
+            const logBox = document.getElementById('monitor-log');
+            logBox.prepend(div);
+            localStorage.setItem('sdn62_logs', logBox.innerHTML);
+        }
 
         function paksaBuka() { channel.publish('request_unlock', { alasan: 'DIBUKA GURU' }); }
         
         function kirimSoal() {
-            const s = ["Sebutkan sila ke-3!", "12 x 5?", "Ibu Kota RI?", "Penemu Lampu?", "3 Benda Padat?"];
+            const s = ["Sebutkan sila ke-3!", "12 x 5?", "Ibu Kota RI?", "Penemu Lampu?", "Sebutkan 3 benda gas!"];
             const soal = s[Math.floor(Math.random()*s.length)];
-            channel.publish('pesan_guru', { teks: soal });
-            addLog("📢 SOAL ACAK: " + soal);
+            channel.publish('pesan_guru', { teks: soal, untuk: 'SEMUA' });
+            addLog("📢 SOAL ACAK: " + soal, '');
         }
 
         function manual() {
             const t = document.getElementById('m-soal').value;
             if(!t) return;
-            channel.publish('pesan_guru', { teks: t });
-            addLog("✅ MANUAL: " + t);
+            channel.publish('pesan_guru', { teks: t, untuk: 'SEMUA' });
+            addLog("✅ MANUAL: " + t, '');
             document.getElementById('m-soal').value = "";
         }
 
         function clearLog() {
-            if(confirm("Hapus semua log?")) {
+            if(confirm("Hapus semua catatan?")) {
                 document.getElementById('monitor-log').innerHTML = "";
                 localStorage.removeItem('sdn62_logs');
             }
-        }
-
-        function addLog(h) {
-            const div = document.createElement('div');
-            div.className = 'item-log';
-            div.innerHTML = `<small>${new Date().toLocaleTimeString()}</small> | ${h}`;
-            const logBox = document.getElementById('monitor-log');
-            logBox.prepend(div);
-            // SIMPAN KE LOCALSTORAGE
-            localStorage.setItem('sdn62_logs', logBox.innerHTML);
         }
     </script>
 </body>
