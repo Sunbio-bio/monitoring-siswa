@@ -3,193 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MASTER CONTROL - SDN 62 TAJONG</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Monitoring Guru - SDN 62 TAJONG</title>
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6366f1; --bg-dark: #0f172a; --glass: rgba(255, 255, 255, 0.05); }
+        :root { --primary: #1a5296; --accent: #4facfe; --danger: #ff4757; --success: #2ed573; }
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #f0f4f8; margin: 0; padding: 20px; color: #333; }
         
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background: var(--bg-dark); 
-            color: white; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: row; /* Default Laptop: Sampingan */
-            min-height: 100vh;
-        }
-
-        /* SIDEBAR */
-        aside { 
-            width: 280px; 
-            background: #1e293b; 
-            padding: 20px; 
-            border-right: 1px solid rgba(255,255,255,0.1); 
-            display: flex; 
-            flex-direction: column; 
-            flex-shrink: 0;
-        }
-
-        /* MAIN CONTENT */
-        main { 
-            flex: 1; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px;
-            max-width: 100%;
-        }
-
-        .log-box { 
-            flex: 1; 
-            background: rgba(0,0,0,0.3); 
-            border-radius: 20px; 
-            padding: 15px; 
-            overflow-y: auto; 
-            border: 1px solid rgba(255,255,255,0.1);
-            min-height: 300px; /* Supaya di HP tidak terlalu ciut */
-        }
-
-        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .header { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; }
         
-        /* ITEM LOG */
-        .item-log { background: var(--glass); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 5px solid var(--primary); }
-        .log-bantuan { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
-        .log-jawaban { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
-        
-        .reply-box { margin-top: 10px; display: flex; gap: 5px; }
-        .reply-box input { flex: 1; padding: 10px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; }
+        /* PANEL KONTROL GURU (FITUR BARU) */
+        .admin-control-panel { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;
+        }
 
-        /* --- RESPONSIVE MODE (HP) --- */
+        .control-box { 
+            background: white; padding: 20px; border-radius: 15px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05); border-top: 4px solid var(--primary);
+        }
+
+        .input-row { display: flex; gap: 10px; margin-top: 10px; }
+        input[type="text"] { 
+            flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px; outline: none;
+        }
+
+        .btn-action { 
+            padding: 10px 20px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+        .btn-blue { background: var(--primary); color: white; }
+        .btn-red { background: var(--danger); color: white; width: 100%; margin-top: 10px; }
+        .btn-action:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        /* GRID MONITORING (SKRIP ASLI) */
+        #siswa-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid var(--accent); }
+        .card h3 { margin: 0 0 10px; font-size: 15px; color: var(--primary); display: flex; justify-content: space-between; }
+        .status-online { color: var(--success); font-weight: bold; }
+        .status-offline { color: #ccc; }
+
         @media (max-width: 768px) {
-            body { flex-direction: column; overflow-y: auto; } /* Tumpuk ke bawah */
-            aside { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
-            main { padding: 15px; }
-            .log-box { height: 400px; flex: none; } /* Box log punya tinggi tetap di HP */
-            .btn { font-size: 14px; }
+            .admin-control-panel { grid-template-columns: 1fr; }
         }
-
-        .footer { font-size: 10px; margin-top: 20px; opacity: 0.5; text-align: center; }
     </style>
 </head>
 <body>
 
-    <aside>
-        <h2 style="color:var(--primary); margin:0;">SDN 62 TAJONG</h2>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 0;">ADMIN MONITORING</p>
-        
-        <button class="btn" style="background:#f59e0b; margin-bottom:10px;" onclick="kirimSoal()">🎲 SOAL ACAK</button>
-        <button class="btn" style="background:#ef4444; color:white;" onclick="paksaBuka()">🔓 BUKA TOMBOL</button>
-        
-        <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; font-size:12px; margin-top:15px; text-align:center;">
-            Status: <b id="stat-t" style="color:#10b981">TERBUKA</b>
-        </div>
-        
-        <div class="footer">Portal Sekolah 62 Tajong © 2026</div>
-    </aside>
+    <div class="header">
+        <h2 style="margin:0; color:var(--primary);">Panel Monitoring Guru</h2>
+        <p style="font-size:12px; color:#666;">SDN 62 TAJONG - Pusat Kendali Realtime</p>
+    </div>
 
-    <main>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="margin:0">LOG AKTIVITAS</h3>
-            <button class="btn" style="background:#475569; color:white; font-size:11px;" onclick="clearLog()">🗑️ CLEAR</button>
+    <div class="admin-control-panel">
+        <div class="control-box">
+            <h3 style="margin:0; font-size:14px;">📢 Kirim Jawaban ke Semua Siswa</h3>
+            <div class="input-row">
+                <input type="text" id="massAnswerInput" placeholder="Ketik jawaban (Contoh: A, B, C)...">
+                <button class="btn-action btn-blue" onclick="kirimJawabanMassal()">KIRIM</button>
+            </div>
         </div>
-        
-        <div class="log-box" id="monitor-log"></div>
 
-        <div style="background: #1e293b; padding: 15px; border-radius: 15px; display:flex; gap:10px;">
-            <input id="m-soal" style="flex:1; padding:12px; border-radius:10px; background:#0f172a; color:white; border:1px solid #334155;" placeholder="Soal manual...">
-            <button class="btn" style="background:var(--primary); color:white;" onclick="manual()">KIRIM</button>
+        <div class="control-box">
+            <h3 style="margin:0; font-size:14px;">⚠️ Reset Progres Siswa</h3>
+            <button class="btn-action btn-red" onclick="resetSemuaSiswa()">🔄 RESET SEMUA SISWA SEKARANG</button>
         </div>
-    </main>
+    </div>
 
-    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <div id="siswa-container">
+        </div>
+
     <script>
+        // --- KONFIGURASI ABLY (TETAP SAMA) ---
         const ably = new Ably.Realtime('Lqd-SA.02uOJw:5Q9fS13uwWhBLZJsqF9XA4gjNMzowZHCq2jJ9kxDdx8');
-        const channel = ably.channels.get('sdn62-tajong-main');
-        let isLocked = false;
+        const channelMonitoring = ably.channels.get('monitoring-siswa');
+        const channelControl = ably.channels.get('kontrol-siswa'); // Jalur perintah
+        
+        const dataSiswa = {};
 
-        window.onload = () => {
-            const savedLog = localStorage.getItem('sdn62_logs');
-            if(savedLog) document.getElementById('monitor-log').innerHTML = savedLog;
-        };
-
-        channel.subscribe('request_lock', (msg) => {
-            if(!isLocked) {
-                isLocked = true;
-                channel.publish('sistem_kendali', { tipe: 'LOCK', oleh: msg.data.nama });
-                addLog(`🔒 <b>${msg.data.nama}</b> Mengunci Tombol`, 'log-jawaban');
-                document.getElementById('stat-t').innerText = "TERKUNCI: " + msg.data.nama;
-                document.getElementById('stat-t').style.color = "#ef4444";
-                new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
-            }
+        // --- SKRIP ASLI: MONITORING DATA SISWA ---
+        channelMonitoring.subscribe('update', (message) => {
+            const info = message.data;
+            dataSiswa[info.nama] = {
+                ...info,
+                lastSeen: Date.now()
+            };
+            renderSiswa();
         });
 
-        channel.subscribe('request_unlock', (msg) => {
-            isLocked = false;
-            channel.publish('sistem_kendali', { tipe: 'UNLOCK' });
-            addLog(`🔓 Tombol Terbuka (${msg.data.alasan})`, '');
-            document.getElementById('stat-t').innerText = "TERBUKA";
-            document.getElementById('stat-t').style.color = "#10b981";
-        });
-
-        channel.subscribe('siswa_aksi', (msg) => {
-            const d = msg.data;
-            let tipe = d.aksi.includes("BANTUAN") ? "log-bantuan" : (d.aksi.includes("JAWABAN") ? "log-jawaban" : "");
-            addLogBalas(d.nama, d.meja, d.aksi, tipe);
-            new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
-        });
-
-        function addLogBalas(nama, meja, aksi, kelas) {
-            const div = document.createElement('div');
-            div.className = `item-log ${kelas}`;
-            const idInput = 'in-' + Math.floor(Math.random() * 1000);
-            div.innerHTML = `
-                <div style="font-size:10px; opacity:0.7;">Meja ${meja} | ${nama}</div>
-                <div style="font-size:14px; font-weight:bold; margin-top:5px;">${aksi}</div>
-                <div class="reply-box">
-                    <input id="${idInput}" placeholder="Balas ke ${nama}...">
-                    <button class="btn" style="background:var(--primary); color:white; font-size:11px;" onclick="balasSatu('${nama}', '${idInput}')">KIRIM</button>
-                </div>`;
-            document.getElementById('monitor-log').prepend(div);
-            localStorage.setItem('sdn62_logs', document.getElementById('monitor-log').innerHTML);
+        // --- FITUR BARU: JAWABAN MASSAL ---
+        function kirimJawabanMassal() {
+            const jawaban = document.getElementById('massAnswerInput').value;
+            if(!jawaban) return alert("Ketik jawaban dulu, Pak!");
+            
+            channelControl.publish('kirimJawaban', { jawaban: jawaban });
+            alert("Jawaban '" + jawaban + "' telah dikirim ke semua siswa.");
+            document.getElementById('massAnswerInput').value = "";
         }
 
-        function balasSatu(nama, id) {
-            const t = document.getElementById(id).value;
-            if(!t) return;
-            channel.publish('pesan_guru', { teks: "BALASAN GURU: " + t, untuk: nama });
-            document.getElementById(id).value = "";
-            addLog(`✅ Balas ke <b>${nama}</b>: ${t}`, '');
-        }
-
-        function addLog(h, kelas) {
-            const div = document.createElement('div');
-            div.className = 'item-log ' + kelas;
-            div.innerHTML = `<small>${new Date().toLocaleTimeString()}</small> | ${h}`;
-            document.getElementById('monitor-log').prepend(div);
-            localStorage.setItem('sdn62_logs', document.getElementById('monitor-log').innerHTML);
-        }
-
-        function paksaBuka() { channel.publish('request_unlock', { alasan: 'DIBUKA GURU' }); }
-        function manual() {
-            const t = document.getElementById('m-soal').value;
-            if(!t) return;
-            channel.publish('pesan_guru', { teks: t, untuk: 'SEMUA' });
-            addLog("✅ MANUAL: " + t, '');
-            document.getElementById('m-soal').value = "";
-        }
-        function kirimSoal() {
-            const s = ["Sebutkan sila ke-3!", "12 x 5?", "Ibu Kota RI?", "3 Benda Padat?"];
-            const soal = s[Math.floor(Math.random()*s.length)];
-            channel.publish('pesan_guru', { teks: soal, untuk: 'SEMUA' });
-            addLog("📢 SOAL ACAK: " + soal, '');
-        }
-        function clearLog() {
-            if(confirm("Hapus log?")) {
-                document.getElementById('monitor-log').innerHTML = "";
-                localStorage.removeItem('sdn62_logs');
+        // --- FITUR BARU: RESET SEMUA SISWA (SATU KLIK) ---
+        function resetSemuaSiswa() {
+            if(confirm("PERINGATAN: Semua siswa yang sedang login akan di-reset soalnya. Lanjutkan?")) {
+                channelControl.publish('resetSoal', { target: "SEMUA_SISWA" });
+                alert("Perintah Reset Massal telah dikirim!");
             }
         }
+
+        // --- SKRIP ASLI: RENDER TAMPILAN MONITORING ---
+        function renderSiswa() {
+            const container = document.getElementById('siswa-container');
+            container.innerHTML = '';
+
+            Object.keys(dataSiswa).forEach(nama => {
+                const s = dataSiswa[nama];
+                const isOnline = (Date.now() - s.lastSeen) < 10000;
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3>${nama} <span class="${isOnline ? 'status-online' : 'status-offline'}">${isOnline ? '●' : '○'}</span></h3>
+                    <p style="font-size:13px;"><b>Status:</b> ${s.status || 'Mengerjakan'}</p>
+                    <p style="font-size:13px;"><b>Progress:</b> Soal No. ${s.nomorSekarang || '1'}</p>
+                    <p style="font-size:13px;"><b>Jawaban:</b> ${s.jawabanTerakhir || '-'}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Refresh otomatis status online/offline
+        setInterval(renderSiswa, 5000);
     </script>
 </body>
 </html>
-
