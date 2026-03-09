@@ -11,8 +11,6 @@
         aside { width: 280px; background: #1e293b; padding: 20px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; flex-shrink: 0; }
         .guru-control { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px dashed var(--primary); }
         .guru-control h4 { margin: 0 0 10px 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; }
-        
-        /* Input Massal di Sidebar */
         .input-massal { width: 100%; padding: 10px; border-radius: 8px; border: none; background: #0f172a; color: white; margin-bottom: 8px; font-size: 13px; outline: none; box-sizing: border-box; }
         
         main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; max-width: 100%; }
@@ -23,15 +21,13 @@
         .log-bantuan { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
         .log-jawaban { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
         
-        /* Perbaikan Kolom Balas di Log (Agar tidak terlalu panjang) */
         .reply-box { margin-top: 10px; display: flex; gap: 8px; max-width: 400px; }
         .reply-box input { flex: 1; padding: 10px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; font-size: 13px; }
 
-        /* Perbaikan Kolom Input Manual di Bawah (Presisi & Pas) */
         .footer-input-area { background: #1e293b; padding: 15px; border-radius: 15px; display: flex; gap: 10px; align-items: center; justify-content: center; }
         .input-manual-styled { width: 100%; max-width: 500px; padding: 12px; border-radius: 10px; background: #0f172a; color: white; border: 1px solid #334155; outline: none; }
 
-        @media (max-width: 768px) { body { flex-direction: column; } aside { width: 100%; } .log-box { height: 400px; } .footer-input-area { flex-direction: column; } .input-manual-styled { max-width: 100%; } }
+        @media (max-width: 768px) { body { flex-direction: column; } aside { width: 100%; } .log-box { height: 400px; } .footer-input-area { flex-direction: column; } }
         .footer { font-size: 10px; margin-top: 20px; opacity: 0.5; text-align: center; }
     </style>
 </head>
@@ -51,7 +47,10 @@
         </div>
 
         <button class="btn" style="background:#f59e0b; margin-bottom:10px;" onclick="kirimSoal()">🎲 SOAL ACAK</button>
-        <button class="btn" style="background:#ef4444; color:white;" onclick="paksaBuka()">🔓 BUKA TOMBOL</button>
+        
+        <button class="btn" style="background:#10b981; color:white; margin-bottom:10px;" onclick="paksaBuka()">🔓 BUKA TOMBOL</button>
+        <button class="btn" style="background:#ef4444; color:white;" onclick="paksaKunci()">🔒 KUNCI TOMBOL</button>
+
         <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; font-size:12px; margin-top:15px; text-align:center;">
             Status: <b id="stat-t" style="color:#10b981">TERBUKA</b>
         </div>
@@ -67,7 +66,7 @@
         <div class="log-box" id="monitor-log"></div>
         
         <div class="footer-input-area">
-            <input id="m-soal" class="input-manual-styled" placeholder="Ketik soal atau pesan manual di sini...">
+            <input id="m-soal" class="input-manual-styled" placeholder="Ketik soal atau pesan manual...">
             <button class="btn" style="background:var(--primary); color:white; min-width: 100px;" onclick="manual()">KIRIM</button>
         </div>
     </main>
@@ -83,6 +82,24 @@
             if(savedLog) document.getElementById('monitor-log').innerHTML = savedLog;
         };
 
+        // --- FUNGSI KUNCI MANUAL ---
+        function paksaKunci() {
+            isLocked = true;
+            channel.publish('sistem_kendali', { tipe: 'LOCK', oleh: 'GURU (Manual)' });
+            document.getElementById('stat-t').innerText = "TERKUNCI";
+            document.getElementById('stat-t').style.color = "#ef4444";
+            addLog("🔒 Tombol Siswa Dikunci Guru", 'log-bantuan');
+        }
+
+        function paksaBuka() {
+            isLocked = false;
+            channel.publish('sistem_kendali', { tipe: 'UNLOCK' });
+            document.getElementById('stat-t').innerText = "TERBUKA";
+            document.getElementById('stat-t').style.color = "#10b981";
+            addLog("🔓 Tombol Siswa Dibuka Guru", '');
+        }
+
+        // --- FUNGSI ASLI LAINNYA ---
         function kirimMassalLengkap() {
             const teks = document.getElementById('jawaban-massal').value;
             const fotoInput = document.getElementById('foto-massal');
@@ -115,7 +132,7 @@
         }
 
         function resetMassal() {
-            if(confirm("Bersihkan tampilan soal di semua siswa? (Siswa tetap login)")) {
+            if(confirm("Bersihkan tampilan soal di semua siswa?")) {
                 channel.publish('sistem_kendali', { tipe: 'RESET_MASSAL' });
                 addLog("⚠️ RESET SOAL MASSAL", 'log-bantuan');
             }
@@ -167,18 +184,19 @@
             localStorage.setItem('sdn62_logs', document.getElementById('monitor-log').innerHTML);
         }
 
-        function paksaBuka() { channel.publish('request_unlock', { alasan: 'GURU' }); }
         function manual() {
             const t = document.getElementById('m-soal').value; if(!t) return;
             channel.publish('pesan_guru', { teks: t, untuk: 'SEMUA' });
             addLog("✅ MANUAL: " + t, ''); document.getElementById('m-soal').value = "";
         }
+
         function kirimSoal() {
             const s = ["Sebutkan sila ke-3!", "12 x 5?", "Ibu Kota RI?", "3 Benda Padat?"];
             const soal = s[Math.floor(Math.random()*s.length)];
             channel.publish('pesan_guru', { teks: soal, untuk: 'SEMUA' });
             addLog("📢 ACAK: " + soal, '');
         }
+
         function clearLog() { if(confirm("Hapus?")) { document.getElementById('monitor-log').innerHTML = ""; localStorage.removeItem('sdn62_logs'); } }
     </script>
 </body>
