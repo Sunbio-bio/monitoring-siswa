@@ -13,7 +13,6 @@
         .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
         .btn-jawab { background: #10b981; color: white; font-size: 18px; }
         
-        /* Tombol Logout */
         .btn-logout { position: absolute; top: 15px; right: 15px; background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 5px 12px; border-radius: 10px; font-size: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; }
         .btn-logout:hover { background: #ef4444; color: white; }
 
@@ -22,11 +21,14 @@
         #input-jawaban-container { display: none; margin-top: 15px; }
         .status-lock { font-size: 12px; color: #ef4444; font-weight: bold; margin-bottom: 10px; display: none; }
         .footer-login { margin-top: 25px; font-size: 10px; color: #94a3b8; text-align: center; }
+        
+        /* Gaya untuk Foto dari Guru */
+        #img-display { width: 100%; border-radius: 15px; margin-top: 10px; display: none; border: 2px solid var(--accent); }
     </style>
 </head>
 <body>
 
-<div id="login-section" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+    <div id="login-section" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
         <div class="box">
             <h2 style="color:var(--primary); margin:0;">SD NEGERI 62 TAJONG</h2>
             <p style="font-size:10px; margin-bottom:20px;">PORTAL DIGITAL CLASSROOM</p>
@@ -34,7 +36,7 @@
             <input id="meja" type="text" placeholder="Kelas">
             <button class="btn btn-primary" onclick="gabung()">MASUK KELAS</button>
         </div>
-        <div class="footer-login" id="footer-login-text">Portal Sekolah Digital © 2026<br>Developed by Riski OPS 62 Tajong</div>
+        <div class="footer-login">Portal Sekolah Digital © 2026<br>Developed by Riski OPS 62 Tajong</div>
     </div>
 
     <div id="game-ui" class="box" style="display:none;">
@@ -43,7 +45,9 @@
         <div id="user-display" style="font-size: 12px; margin-bottom: 15px; opacity: 0.8; text-align: left;"></div>
         
         <div style="background:rgba(0,0,0,0.4); padding:15px; border-radius:15px; margin-bottom:15px; border-left:4px solid var(--accent); text-align: left;">
-            <b style="color:var(--accent)">SOAL GURU:</b><br><span id="teks-soal">Menunggu instruksi...</span>
+            <b style="color:var(--accent)">INFO DARI GURU:</b><br>
+            <span id="teks-soal">Menunggu instruksi...</span>
+            <img id="img-display" src="" alt="Lampiran Guru">
         </div>
 
         <div id="status-lock" class="status-lock">🔒 TERKUNCI</div>
@@ -84,18 +88,26 @@
             document.getElementById('user-display').innerText = `👤 ${n} | Meja ${m}`;
         }
 
-        // FUNGSI LOGOUT
         function keluar() {
             if(confirm("Apakah Anda yakin ingin keluar?")) {
                 const n = sessionStorage.getItem('nama');
                 channel.publish('siswa_aksi', { nama: n, aksi: 'KELUAR KELAS' });
                 sessionStorage.clear();
-                location.reload(); // Refresh untuk balik ke login
+                location.reload();
             }
         }
 
+        // --- FITUR BARU: MENANGKAP SINYAL RESET MASSAL ---
         channel.subscribe('sistem_kendali', (msg) => {
             const d = msg.data;
+            
+            if(d.tipe === 'RESET_MASSAL') {
+                alert("Guru telah me-reset semua progres siswa.");
+                sessionStorage.clear();
+                location.reload();
+                return;
+            }
+
             const btn = document.getElementById('btn-jawab-main');
             const status = document.getElementById('status-lock');
             const timerDisplay = document.getElementById('timer');
@@ -110,7 +122,7 @@
                     timerDisplay.style.display = 'block';
                     startTimer(300);
                 }
-            } else {
+            } else if(d.tipe === 'UNLOCK') {
                 btn.style.display = 'block';
                 status.style.display = 'none';
                 inputCont.style.display = 'none';
@@ -119,9 +131,29 @@
             }
         });
 
+        // --- FITUR BARU: MENERIMA FOTO & CEK COMMAND RESET ---
         channel.subscribe('pesan_guru', (msg) => {
-            if(!msg.data.untuk || msg.data.untuk === 'SEMUA' || msg.data.untuk === sessionStorage.getItem('nama')) {
-                document.getElementById('teks-soal').innerHTML = msg.data.teks;
+            const d = msg.data;
+
+            // Jika guru mengirim kode reset lewat jalur pesan
+            if(d.teks === 'SISTEM_RESET_COMMAND') {
+                sessionStorage.clear();
+                location.reload();
+                return;
+            }
+
+            if(!d.untuk || d.untuk === 'SEMUA' || d.untuk === sessionStorage.getItem('nama')) {
+                document.getElementById('teks-soal').innerHTML = d.teks;
+                
+                // Tampilkan Foto jika ada lampiran
+                const imgDisp = document.getElementById('img-display');
+                if(d.foto) {
+                    imgDisp.src = d.foto;
+                    imgDisp.style.display = 'block';
+                } else {
+                    imgDisp.style.display = 'none';
+                }
+
                 new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
             }
         });
@@ -150,4 +182,3 @@
     </script>
 </body>
 </html>
-
