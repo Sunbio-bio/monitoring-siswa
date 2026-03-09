@@ -11,16 +11,27 @@
         aside { width: 280px; background: #1e293b; padding: 20px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; flex-shrink: 0; }
         .guru-control { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px dashed var(--primary); }
         .guru-control h4 { margin: 0 0 10px 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; }
-        .input-massal { width: 100%; padding: 10px; border-radius: 8px; border: none; background: #0f172a; color: white; margin-bottom: 8px; font-size: 13px; outline: none; }
+        
+        /* Input Massal di Sidebar */
+        .input-massal { width: 100%; padding: 10px; border-radius: 8px; border: none; background: #0f172a; color: white; margin-bottom: 8px; font-size: 13px; outline: none; box-sizing: border-box; }
+        
         main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; max-width: 100%; }
         .log-box { flex: 1; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 15px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); min-height: 300px; }
-        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        
         .item-log { background: var(--glass); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 5px solid var(--primary); }
         .log-bantuan { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
         .log-jawaban { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
-        .reply-box { margin-top: 10px; display: flex; gap: 5px; }
-        .reply-box input { flex: 1; padding: 10px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; }
-        @media (max-width: 768px) { body { flex-direction: column; } aside { width: 100%; } .log-box { height: 400px; } }
+        
+        /* Perbaikan Kolom Balas di Log (Agar tidak terlalu panjang) */
+        .reply-box { margin-top: 10px; display: flex; gap: 8px; max-width: 400px; }
+        .reply-box input { flex: 1; padding: 10px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; font-size: 13px; }
+
+        /* Perbaikan Kolom Input Manual di Bawah (Presisi & Pas) */
+        .footer-input-area { background: #1e293b; padding: 15px; border-radius: 15px; display: flex; gap: 10px; align-items: center; justify-content: center; }
+        .input-manual-styled { width: 100%; max-width: 500px; padding: 12px; border-radius: 10px; background: #0f172a; color: white; border: 1px solid #334155; outline: none; }
+
+        @media (max-width: 768px) { body { flex-direction: column; } aside { width: 100%; } .log-box { height: 400px; } .footer-input-area { flex-direction: column; } .input-manual-styled { max-width: 100%; } }
         .footer { font-size: 10px; margin-top: 20px; opacity: 0.5; text-align: center; }
     </style>
 </head>
@@ -32,7 +43,7 @@
         <div class="guru-control">
             <h4>📢 Kirim Massal (Teks/Foto)</h4>
             <input type="text" id="jawaban-massal" class="input-massal" placeholder="Tulis jawaban...">
-            <input type="file" id="foto-massal" accept="image/*" style="font-size: 10px; margin-bottom: 10px;">
+            <input type="file" id="foto-massal" accept="image/*" style="font-size: 10px; margin-bottom: 10px; width: 100%;">
             <button id="btn-kirim-massal" class="btn" style="background:var(--primary); color:white; width:100%; font-size:12px;" onclick="kirimMassalLengkap()">KIRIM KE SEMUA</button>
             
             <h4 style="margin-top:15px;">⚠️ Kendali Progres</h4>
@@ -52,10 +63,12 @@
             <h3 style="margin:0">LOG AKTIVITAS</h3>
             <button class="btn" style="background:#475569; color:white; font-size:11px;" onclick="clearLog()">🗑️ CLEAR</button>
         </div>
+        
         <div class="log-box" id="monitor-log"></div>
-        <div style="background: #1e293b; padding: 15px; border-radius: 15px; display:flex; gap:10px;">
-            <input id="m-soal" style="flex:1; padding:12px; border-radius:10px; background:#0f172a; color:white; border:1px solid #334155;" placeholder="Soal manual...">
-            <button class="btn" style="background:var(--primary); color:white;" onclick="manual()">KIRIM</button>
+        
+        <div class="footer-input-area">
+            <input id="m-soal" class="input-manual-styled" placeholder="Ketik soal atau pesan manual di sini...">
+            <button class="btn" style="background:var(--primary); color:white; min-width: 100px;" onclick="manual()">KIRIM</button>
         </div>
     </main>
 
@@ -136,7 +149,7 @@
             const div = document.createElement('div'); div.className = `item-log ${kelas}`;
             const idInput = 'in-' + Math.floor(Math.random() * 1000);
             div.innerHTML = `<div style="font-size:10px; opacity:0.7;">Meja ${meja} | ${nama}</div><div style="font-size:14px; font-weight:bold; margin-top:5px;">${aksi}</div>
-                <div class="reply-box"><input id="${idInput}" placeholder="Balas..."><button class="btn" style="background:var(--primary); color:white; font-size:11px;" onclick="balasSatu('${nama}', '${idInput}')">KIRIM</button></div>`;
+                <div class="reply-box"><input id="${idInput}" placeholder="Ketik balasan..."><button class="btn" style="background:var(--primary); padding: 5px 15px; color:white; font-size:11px;" onclick="balasSatu('${nama}', '${idInput}')">KIRIM</button></div>`;
             document.getElementById('monitor-log').prepend(div);
             localStorage.setItem('sdn62_logs', document.getElementById('monitor-log').innerHTML);
         }
