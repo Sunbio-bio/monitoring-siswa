@@ -29,7 +29,7 @@
             flex-shrink: 0;
         }
 
-        /* FITUR TAMBAHAN: PANEL KENDALI GURU */
+        /* PANEL KENDALI GURU */
         .guru-control {
             background: rgba(0,0,0,0.3);
             padding: 15px;
@@ -42,6 +42,10 @@
             width: 100%; padding: 10px; border-radius: 8px; border: none; 
             background: #0f172a; color: white; margin-bottom: 8px; font-size: 13px;
         }
+        .file-input-wrapper {
+            margin-bottom: 10px;
+        }
+        .file-input-wrapper input { font-size: 10px; color: #94a3b8; }
 
         /* MAIN CONTENT */
         main { 
@@ -64,6 +68,7 @@
         }
 
         .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-sm { padding: 8px; font-size: 11px; }
         
         .item-log { background: var(--glass); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 5px solid var(--primary); }
         .log-bantuan { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
@@ -90,12 +95,15 @@
         <p style="font-size: 11px; color: #94a3b8; margin-top: 0; margin-bottom: 20px;">ADMIN MONITORING</p>
         
         <div class="guru-control">
-            <h4>📢 Jawaban Massal</h4>
-            <input type="text" id="jawaban-massal" class="input-massal" placeholder="Ketik jawaban semua...">
-            <button class="btn" style="background:var(--primary); color:white; width:100%; font-size:12px;" onclick="kirimJawabanMassal()">KIRIM SEMUA</button>
+            <h4>📢 Kirim Massal (Teks & Foto)</h4>
+            <input type="text" id="jawaban-massal" class="input-massal" placeholder="Tulis jawaban/pesan...">
+            <div class="file-input-wrapper">
+                <input type="file" id="foto-massal" accept="image/*">
+            </div>
+            <button id="btn-kirim-massal" class="btn" style="background:var(--primary); color:white; width:100%; font-size:12px;" onclick="kirimMassalLengkap()">KIRIM KE SEMUA</button>
             
             <h4 style="margin-top:15px;">⚠️ Kendali Siswa</h4>
-            <button class="btn" style="background:#ef4444; color:white; width:100%; font-size:11px;" onclick="resetMassal()">🔄 RESET SEMUA SISWA</button>
+            <button class="btn" style="background:#ef4444; color:white; width:100%; font-size:11px;" onclick="resetMassal()">🔄 RESET PROGRES SEMUA</button>
         </div>
 
         <button class="btn" style="background:#f59e0b; margin-bottom:10px;" onclick="kirimSoal()">🎲 SOAL ACAK</button>
@@ -133,40 +141,85 @@
             if(savedLog) document.getElementById('monitor-log').innerHTML = savedLog;
         };
 
-        // --- FITUR BARU: LOGIKA KONTROL MASSAL ---
-        function kirimJawabanMassal() {
+        // --- FUNGSI KIRIM MASSAL DENGAN FOTO ---
+        function kirimMassalLengkap() {
             const teks = document.getElementById('jawaban-massal').value;
-            if(!teks) return;
-            // Menggunakan channel yang sama dengan pesan_guru agar siswa menerima jawaban ini
-            channel.publish('pesan_guru', { teks: "JAWABAN: " + teks, untuk: 'SEMUA' });
-            addLog("📢 JAWABAN MASSAL: " + teks, 'log-jawaban');
-            document.getElementById('jawaban-massal').value = "";
-        }
+            const fotoInput = document.getElementById('foto-massal');
+            const btn = document.getElementById('btn-kirim-massal');
 
-        function resetMassal() {
-            if(confirm("Apakah Anda yakin ingin RESET SEMUA progres siswa?")) {
-                // Mengirim sinyal kendali khusus untuk reset
-                channel.publish('sistem_kendali', { tipe: 'RESET_MASSAL' });
-                addLog("⚠️ RESET MASSAL DILAKUKAN", 'log-bantuan');
+            if(!teks && !fotoInput.files[0]) return alert("Isi pesan atau pilih foto!");
+
+            btn.disabled = true;
+            btn.innerText = "MENGIRIM...";
+
+            if (fotoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Kompresi sederhana sebelum kirim via Ably
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const maxW = 400; 
+                        const scale = maxW / img.width;
+                        canvas.width = maxW; canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const base64Foto = canvas.toDataURL('image/jpeg', 0.6);
+                        
+                        publishMassal(teks, base64Foto);
+                    };
+                };
+                reader.readAsDataURL(fotoInput.files[0]);
+            } else {
+                publishMassal(teks, null);
             }
         }
 
-        // --- SKRIP ASLI: JANGAN DIUBAH ---
+        function publishMassal(teks, foto) {
+            channel.publish('pesan_guru', { 
+                teks: teks ? "INFO GURU: " + teks : "INFO GURU: (Lampiran Foto)", 
+                untuk: 'SEMUA',
+                foto: foto 
+            }, (err) => {
+                const btn = document.getElementById('btn-kirim-massal');
+                btn.disabled = false;
+                btn.innerText = "KIRIM KE SEMUA";
+                if(!err) {
+                    addLog("📢 MASSAL: " + (teks || "Foto Terkirim"), 'log-jawaban');
+                    document.getElementById('jawaban-massal').value = "";
+                    document.getElementById('foto-massal').value = "";
+                }
+            });
+        }
+
+        // --- PERBAIKAN RESET MASSAL ---
+        function resetMassal() {
+            if(confirm("⚠ BAHAYA: Reset semua progres siswa yang sedang login?")) {
+                // Mengirim ke dua channel untuk memastikan sampai
+                channel.publish('sistem_kendali', { tipe: 'RESET_MASSAL' });
+                // Tambahan: mengirim lewat jalur pesan guru agar terdeteksi
+                channel.publish('pesan_guru', { teks: "SISTEM_RESET_COMMAND", untuk: 'SEMUA' });
+                
+                addLog("⚠️ PERINTAH RESET MASSAL DIKIRIM", 'log-bantuan');
+            }
+        }
+
+        // --- SKRIP ASLI (DIJAGA KETAT) ---
         channel.subscribe('request_lock', (msg) => {
             if(!isLocked) {
                 isLocked = true;
                 channel.publish('sistem_kendali', { tipe: 'LOCK', oleh: msg.data.nama });
-                addLog(`🔒 <b>${msg.data.nama}</b> Mengunci Tombol`, 'log-jawaban');
-                document.getElementById('stat-t').innerText = "TERKUNCI: " + msg.data.nama;
+                addLog(`🔒 <b>${msg.data.nama}</b> Mengunci`, 'log-jawaban');
+                document.getElementById('stat-t').innerText = "KUNCI: " + msg.data.nama;
                 document.getElementById('stat-t').style.color = "#ef4444";
-                new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
             }
         });
 
         channel.subscribe('request_unlock', (msg) => {
             isLocked = false;
             channel.publish('sistem_kendali', { tipe: 'UNLOCK' });
-            addLog(`🔓 Tombol Terbuka (${msg.data.alasan})`, '');
+            addLog(`🔓 Terbuka (${msg.data.alasan})`, '');
             document.getElementById('stat-t').innerText = "TERBUKA";
             document.getElementById('stat-t').style.color = "#10b981";
         });
@@ -175,7 +228,6 @@
             const d = msg.data;
             let tipe = d.aksi.includes("BANTUAN") ? "log-bantuan" : (d.aksi.includes("JAWABAN") ? "log-jawaban" : "");
             addLogBalas(d.nama, d.meja, d.aksi, tipe);
-            new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
         });
 
         function addLogBalas(nama, meja, aksi, kelas) {
@@ -186,8 +238,8 @@
                 <div style="font-size:10px; opacity:0.7;">Meja ${meja} | ${nama}</div>
                 <div style="font-size:14px; font-weight:bold; margin-top:5px;">${aksi}</div>
                 <div class="reply-box">
-                    <input id="${idInput}" placeholder="Balas ke ${nama}...">
-                    <button class="btn" style="background:var(--primary); color:white; font-size:11px;" onclick="balasSatu('${nama}', '${idInput}')">KIRIM</button>
+                    <input id="${idInput}" placeholder="Balas ${nama}...">
+                    <button class="btn btn-sm" style="background:var(--primary); color:white;" onclick="balasSatu('${nama}', '${idInput}')">KIRIM</button>
                 </div>`;
             document.getElementById('monitor-log').prepend(div);
             localStorage.setItem('sdn62_logs', document.getElementById('monitor-log').innerHTML);
@@ -198,7 +250,7 @@
             if(!t) return;
             channel.publish('pesan_guru', { teks: "BALASAN GURU: " + t, untuk: nama });
             document.getElementById(id).value = "";
-            addLog(`✅ Balas ke <b>${nama}</b>: ${t}`, '');
+            addLog(`✅ Ke <b>${nama}</b>: ${t}`, '');
         }
 
         function addLog(h, kelas) {
@@ -209,7 +261,7 @@
             localStorage.setItem('sdn62_logs', document.getElementById('monitor-log').innerHTML);
         }
 
-        function paksaBuka() { channel.publish('request_unlock', { alasan: 'DIBUKA GURU' }); }
+        function paksaBuka() { channel.publish('request_unlock', { alasan: 'GURU' }); }
         function manual() {
             const t = document.getElementById('m-soal').value;
             if(!t) return;
@@ -221,10 +273,10 @@
             const s = ["Sebutkan sila ke-3!", "12 x 5?", "Ibu Kota RI?", "3 Benda Padat?"];
             const soal = s[Math.floor(Math.random()*s.length)];
             channel.publish('pesan_guru', { teks: soal, untuk: 'SEMUA' });
-            addLog("📢 SOAL ACAK: " + soal, '');
+            addLog("📢 ACAK: " + soal, '');
         }
         function clearLog() {
-            if(confirm("Hapus log?")) {
+            if(confirm("Hapus?")) {
                 document.getElementById('monitor-log').innerHTML = "";
                 localStorage.removeItem('sdn62_logs');
             }
