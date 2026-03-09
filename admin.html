@@ -7,112 +7,43 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #6366f1; --bg-dark: #0f172a; --glass: rgba(255, 255, 255, 0.05); }
-        
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background: var(--bg-dark); 
-            color: white; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: row; 
-            min-height: 100vh;
-        }
-
-        /* SIDEBAR */
-        aside { 
-            width: 280px; 
-            background: #1e293b; 
-            padding: 20px; 
-            border-right: 1px solid rgba(255,255,255,0.1); 
-            display: flex; 
-            flex-direction: column; 
-            flex-shrink: 0;
-        }
-
-        /* PANEL KENDALI GURU */
-        .guru-control {
-            background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            border: 1px dashed var(--primary);
-        }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: white; margin: 0; display: flex; flex-direction: row; min-height: 100vh; }
+        aside { width: 280px; background: #1e293b; padding: 20px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; flex-shrink: 0; }
+        .guru-control { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px dashed var(--primary); }
         .guru-control h4 { margin: 0 0 10px 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; }
-        .input-massal { 
-            width: 100%; padding: 10px; border-radius: 8px; border: none; 
-            background: #0f172a; color: white; margin-bottom: 8px; font-size: 13px;
-        }
-        .file-input-wrapper {
-            margin-bottom: 10px;
-        }
-        .file-input-wrapper input { font-size: 10px; color: #94a3b8; }
-
-        /* MAIN CONTENT */
-        main { 
-            flex: 1; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px;
-            max-width: 100%;
-        }
-
-        .log-box { 
-            flex: 1; 
-            background: rgba(0,0,0,0.3); 
-            border-radius: 20px; 
-            padding: 15px; 
-            overflow-y: auto; 
-            border: 1px solid rgba(255,255,255,0.1);
-            min-height: 300px;
-        }
-
+        .input-massal { width: 100%; padding: 10px; border-radius: 8px; border: none; background: #0f172a; color: white; margin-bottom: 8px; font-size: 13px; outline: none; }
+        main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; max-width: 100%; }
+        .log-box { flex: 1; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 15px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); min-height: 300px; }
         .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-sm { padding: 8px; font-size: 11px; }
-        
         .item-log { background: var(--glass); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 5px solid var(--primary); }
         .log-bantuan { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
         .log-jawaban { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
-        
         .reply-box { margin-top: 10px; display: flex; gap: 5px; }
         .reply-box input { flex: 1; padding: 10px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; }
-
-        @media (max-width: 768px) {
-            body { flex-direction: column; overflow-y: auto; }
-            aside { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
-            main { padding: 15px; }
-            .log-box { height: 400px; flex: none; }
-            .btn { font-size: 14px; }
-        }
-
+        @media (max-width: 768px) { body { flex-direction: column; } aside { width: 100%; } .log-box { height: 400px; } }
         .footer { font-size: 10px; margin-top: 20px; opacity: 0.5; text-align: center; }
     </style>
 </head>
 <body>
-
     <aside>
         <h2 style="color:var(--primary); margin:0;">SDN 62 TAJONG</h2>
         <p style="font-size: 11px; color: #94a3b8; margin-top: 0; margin-bottom: 20px;">ADMIN MONITORING</p>
         
         <div class="guru-control">
-            <h4>📢 Kirim Massal (Teks & Foto)</h4>
-            <input type="text" id="jawaban-massal" class="input-massal" placeholder="Tulis jawaban/pesan...">
-            <div class="file-input-wrapper">
-                <input type="file" id="foto-massal" accept="image/*">
-            </div>
+            <h4>📢 Kirim Massal (Teks/Foto)</h4>
+            <input type="text" id="jawaban-massal" class="input-massal" placeholder="Tulis jawaban...">
+            <input type="file" id="foto-massal" accept="image/*" style="font-size: 10px; margin-bottom: 10px;">
             <button id="btn-kirim-massal" class="btn" style="background:var(--primary); color:white; width:100%; font-size:12px;" onclick="kirimMassalLengkap()">KIRIM KE SEMUA</button>
             
-            <h4 style="margin-top:15px;">⚠️ Kendali Siswa</h4>
-            <button class="btn" style="background:#ef4444; color:white; width:100%; font-size:11px;" onclick="resetMassal()">🔄 RESET PROGRES SEMUA</button>
+            <h4 style="margin-top:15px;">⚠️ Kendali Progres</h4>
+            <button class="btn" style="background:#ef4444; color:white; width:100%; font-size:11px;" onclick="resetMassal()">🔄 RESET SOAL SEMUA</button>
         </div>
 
         <button class="btn" style="background:#f59e0b; margin-bottom:10px;" onclick="kirimSoal()">🎲 SOAL ACAK</button>
         <button class="btn" style="background:#ef4444; color:white;" onclick="paksaBuka()">🔓 BUKA TOMBOL</button>
-        
         <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; font-size:12px; margin-top:15px; text-align:center;">
             Status: <b id="stat-t" style="color:#10b981">TERBUKA</b>
         </div>
-        
         <div class="footer">Portal Sekolah 62 Tajong © 2026</div>
     </aside>
 
@@ -121,9 +52,7 @@
             <h3 style="margin:0">LOG AKTIVITAS</h3>
             <button class="btn" style="background:#475569; color:white; font-size:11px;" onclick="clearLog()">🗑️ CLEAR</button>
         </div>
-        
         <div class="log-box" id="monitor-log"></div>
-
         <div style="background: #1e293b; padding: 15px; border-radius: 15px; display:flex; gap:10px;">
             <input id="m-soal" style="flex:1; padding:12px; border-radius:10px; background:#0f172a; color:white; border:1px solid #334155;" placeholder="Soal manual...">
             <button class="btn" style="background:var(--primary); color:white;" onclick="manual()">KIRIM</button>
@@ -141,71 +70,44 @@
             if(savedLog) document.getElementById('monitor-log').innerHTML = savedLog;
         };
 
-        // --- FUNGSI KIRIM MASSAL DENGAN FOTO ---
         function kirimMassalLengkap() {
             const teks = document.getElementById('jawaban-massal').value;
             const fotoInput = document.getElementById('foto-massal');
             const btn = document.getElementById('btn-kirim-massal');
-
-            if(!teks && !fotoInput.files[0]) return alert("Isi pesan atau pilih foto!");
-
-            btn.disabled = true;
-            btn.innerText = "MENGIRIM...";
-
+            if(!teks && !fotoInput.files[0]) return alert("Isi pesan atau foto!");
+            btn.disabled = true; btn.innerText = "MENGIRIM...";
             if (fotoInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    // Kompresi sederhana sebelum kirim via Ably
-                    const img = new Image();
-                    img.src = e.target.result;
+                    const img = new Image(); img.src = e.target.result;
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        const maxW = 400; 
-                        const scale = maxW / img.width;
+                        const maxW = 400; const scale = maxW / img.width;
                         canvas.width = maxW; canvas.height = img.height * scale;
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        const base64Foto = canvas.toDataURL('image/jpeg', 0.6);
-                        
-                        publishMassal(teks, base64Foto);
+                        publishMassal(teks, canvas.toDataURL('image/jpeg', 0.6));
                     };
                 };
                 reader.readAsDataURL(fotoInput.files[0]);
-            } else {
-                publishMassal(teks, null);
-            }
+            } else { publishMassal(teks, null); }
         }
 
         function publishMassal(teks, foto) {
-            channel.publish('pesan_guru', { 
-                teks: teks ? "INFO GURU: " + teks : "INFO GURU: (Lampiran Foto)", 
-                untuk: 'SEMUA',
-                foto: foto 
-            }, (err) => {
+            channel.publish('pesan_guru', { teks: teks ? "INFO GURU: " + teks : "INFO GURU: (Lampiran)", untuk: 'SEMUA', foto: foto }, (err) => {
                 const btn = document.getElementById('btn-kirim-massal');
-                btn.disabled = false;
-                btn.innerText = "KIRIM KE SEMUA";
-                if(!err) {
-                    addLog("📢 MASSAL: " + (teks || "Foto Terkirim"), 'log-jawaban');
-                    document.getElementById('jawaban-massal').value = "";
-                    document.getElementById('foto-massal').value = "";
-                }
+                btn.disabled = false; btn.innerText = "KIRIM KE SEMUA";
+                if(!err) { addLog("📢 MASSAL: " + (teks || "Foto"), 'log-jawaban'); document.getElementById('jawaban-massal').value = ""; document.getElementById('foto-massal').value = ""; }
             });
         }
 
-        // --- PERBAIKAN RESET MASSAL ---
         function resetMassal() {
-            if(confirm("⚠ BAHAYA: Reset semua progres siswa yang sedang login?")) {
-                // Mengirim ke dua channel untuk memastikan sampai
+            if(confirm("Bersihkan tampilan soal di semua siswa? (Siswa tetap login)")) {
                 channel.publish('sistem_kendali', { tipe: 'RESET_MASSAL' });
-                // Tambahan: mengirim lewat jalur pesan guru agar terdeteksi
-                channel.publish('pesan_guru', { teks: "SISTEM_RESET_COMMAND", untuk: 'SEMUA' });
-                
-                addLog("⚠️ PERINTAH RESET MASSAL DIKIRIM", 'log-bantuan');
+                addLog("⚠️ RESET SOAL MASSAL", 'log-bantuan');
             }
         }
 
-        // --- SKRIP ASLI (DIJAGA KETAT) ---
         channel.subscribe('request_lock', (msg) => {
             if(!isLocked) {
                 isLocked = true;
@@ -231,31 +133,22 @@
         });
 
         function addLogBalas(nama, meja, aksi, kelas) {
-            const div = document.createElement('div');
-            div.className = `item-log ${kelas}`;
+            const div = document.createElement('div'); div.className = `item-log ${kelas}`;
             const idInput = 'in-' + Math.floor(Math.random() * 1000);
-            div.innerHTML = `
-                <div style="font-size:10px; opacity:0.7;">Meja ${meja} | ${nama}</div>
-                <div style="font-size:14px; font-weight:bold; margin-top:5px;">${aksi}</div>
-                <div class="reply-box">
-                    <input id="${idInput}" placeholder="Balas ${nama}...">
-                    <button class="btn btn-sm" style="background:var(--primary); color:white;" onclick="balasSatu('${nama}', '${idInput}')">KIRIM</button>
-                </div>`;
+            div.innerHTML = `<div style="font-size:10px; opacity:0.7;">Meja ${meja} | ${nama}</div><div style="font-size:14px; font-weight:bold; margin-top:5px;">${aksi}</div>
+                <div class="reply-box"><input id="${idInput}" placeholder="Balas..."><button class="btn" style="background:var(--primary); color:white; font-size:11px;" onclick="balasSatu('${nama}', '${idInput}')">KIRIM</button></div>`;
             document.getElementById('monitor-log').prepend(div);
             localStorage.setItem('sdn62_logs', document.getElementById('monitor-log').innerHTML);
         }
 
         function balasSatu(nama, id) {
-            const t = document.getElementById(id).value;
-            if(!t) return;
+            const t = document.getElementById(id).value; if(!t) return;
             channel.publish('pesan_guru', { teks: "BALASAN GURU: " + t, untuk: nama });
-            document.getElementById(id).value = "";
-            addLog(`✅ Ke <b>${nama}</b>: ${t}`, '');
+            document.getElementById(id).value = ""; addLog(`✅ Ke <b>${nama}</b>: ${t}`, '');
         }
 
         function addLog(h, kelas) {
-            const div = document.createElement('div');
-            div.className = 'item-log ' + kelas;
+            const div = document.createElement('div'); div.className = 'item-log ' + kelas;
             div.innerHTML = `<small>${new Date().toLocaleTimeString()}</small> | ${h}`;
             document.getElementById('monitor-log').prepend(div);
             localStorage.setItem('sdn62_logs', document.getElementById('monitor-log').innerHTML);
@@ -263,11 +156,9 @@
 
         function paksaBuka() { channel.publish('request_unlock', { alasan: 'GURU' }); }
         function manual() {
-            const t = document.getElementById('m-soal').value;
-            if(!t) return;
+            const t = document.getElementById('m-soal').value; if(!t) return;
             channel.publish('pesan_guru', { teks: t, untuk: 'SEMUA' });
-            addLog("✅ MANUAL: " + t, '');
-            document.getElementById('m-soal').value = "";
+            addLog("✅ MANUAL: " + t, ''); document.getElementById('m-soal').value = "";
         }
         function kirimSoal() {
             const s = ["Sebutkan sila ke-3!", "12 x 5?", "Ibu Kota RI?", "3 Benda Padat?"];
@@ -275,12 +166,7 @@
             channel.publish('pesan_guru', { teks: soal, untuk: 'SEMUA' });
             addLog("📢 ACAK: " + soal, '');
         }
-        function clearLog() {
-            if(confirm("Hapus?")) {
-                document.getElementById('monitor-log').innerHTML = "";
-                localStorage.removeItem('sdn62_logs');
-            }
-        }
+        function clearLog() { if(confirm("Hapus?")) { document.getElementById('monitor-log').innerHTML = ""; localStorage.removeItem('sdn62_logs'); } }
     </script>
 </body>
 </html>
